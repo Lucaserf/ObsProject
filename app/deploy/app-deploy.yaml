@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+   
+kind: Deployment
+   
+metadata:
+   
+  labels:
+   
+    app.kubernetes.io/name: data-generation-example
+   
+  name: hello-world
+   
+spec:
+   
+  replicas: 1
+   
+  selector:
+   
+    matchLabels:
+   
+      app.kubernetes.io/name: data-generation-example
+   
+  template:
+   
+    metadata:
+   
+      labels:
+   
+        app.kubernetes.io/name: data-generation-example
+   
+    spec:
+   
+      containers:
+   
+      - image: {{build.images["Dockerfile"]}}
+   
+        name: hello-world
+   
+        ports:
+   
+        - containerPort: 8080
