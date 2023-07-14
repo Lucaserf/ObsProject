@@ -32,7 +32,7 @@ spec:
    
       containers:
    
-      - image: {{build.images["Dockerfile"]}}
+      - image: lucaserf/obs:latest
    
         name: hello-world
    
