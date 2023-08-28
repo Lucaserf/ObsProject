@@ -5,10 +5,14 @@ app = Flask(__name__)
 START = time.time()
 
 def elapsed():
+    print("calculating times")
     running = time.time() - START
     minutes, seconds = divmod(running, 60)
     hours, minutes = divmod(minutes, 60)
-    return "%d:%02d:%02d" % (hours, minutes, seconds)
+    days, hours = divmod(hours,24)
+    months, days = divmod(days,30)
+    print("done")
+    return "%d,%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
 
 @app.route('/')
 def root():
