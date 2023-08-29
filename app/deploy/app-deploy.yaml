@@ -3,12 +3,12 @@ apiVersion: apps/v1
 kind: Deployment
    
 metadata:
-   
+
+  name: datagen-deployment
+
   labels:
    
     app.kubernetes.io/name: data-generation-example
-   
-  name: hello-world
    
 spec:
    
@@ -23,6 +23,8 @@ spec:
   template:
    
     metadata:
+
+      name: datagen
    
       labels:
    
