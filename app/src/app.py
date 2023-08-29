@@ -12,7 +12,7 @@ def elapsed():
     days, hours = divmod(hours,24)
     months, days = divmod(days,30)
     print("done")
-    return "%d,%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
+    return "%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
 
 @app.route('/')
 def root():
