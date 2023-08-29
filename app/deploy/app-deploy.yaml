@@ -32,7 +32,7 @@ spec:
    
       containers:
    
-      - image: lucaserf/obs:latest
+      - image: lucaserf/obs:prints
    
         name: hello-world
    
