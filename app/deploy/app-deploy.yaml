@@ -39,3 +39,9 @@ spec:
         ports:
    
         - containerPort: 8080
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      volumes:
+      - name: varlog
+        emptyDir: {}
