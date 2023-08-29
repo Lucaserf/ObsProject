@@ -14,6 +14,8 @@ def elapsed():
     print("done")
     return "%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
 
+
+@app.route('/robots.txt')
 @app.route('/')
 def root():
     return "Hello World (Python)! (up %s)\n" % elapsed()
