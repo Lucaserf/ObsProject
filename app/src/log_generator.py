@@ -1,9 +1,5 @@
 import time
-import logging
-from flask import Flask
-app = Flask(__name__)
 
-START = time.time()
 
 def elapsed():
     print("calculating times")
@@ -18,13 +14,8 @@ def elapsed():
         f.write("%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds))
     return "%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
 
+START = time.time()
 
-@app.route('/robots.txt')
-@app.route('/')
-def root():
-    print("accessed")
-    logging.warning("accessed")
-    return "Hello World (Python)! (up %s)\n" % elapsed()
-
-if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=8080)
+while True:
+    print("Hello World! (up %s)\n" % elapsed())
+    time.sleep(5)

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datagen-deployment
+  labels:
+    app: data-generation-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-generation-example
+  template:
+    metadata:
+      name: datagen   
+      labels:   
+        app: data-generation-example   
+    spec:   
+      containers:   
+      - image: lucaserf/obs:prints   
+        name: datagen  
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+      volumes:
+      - name: varlog
+        emptyDir: {}
