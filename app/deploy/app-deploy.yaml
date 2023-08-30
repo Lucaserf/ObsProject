@@ -1,45 +1,39 @@
-apiVersion: apps/v1
-   
-kind: Deployment
-   
+apiVersion: v1
+kind: Service
 metadata:
-
-  name: datagen-deployment
-
-  labels:
-   
-    app.kubernetes.io/name: data-generation-example
-   
+  name: hello-python-service
 spec:
-   
-  replicas: 1
-   
   selector:
-   
-    matchLabels:
-   
-      app.kubernetes.io/name: data-generation-example
-   
-  template:
-   
-    metadata:
+    app: hello-python
+  ports:
+  - protocol: "TCP"
+    port: 8080
+    targetPort: 8080
+  type: NodePort
 
-      name: datagen
-   
-      labels:
-   
-        app.kubernetes.io/name: data-generation-example
-   
-    spec:
-   
-      containers:
-   
-      - image: lucaserf/obs:prints
-   
-        name: hello-world
-   
-        ports:
-   
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datagen-deployment
+  labels:
+    app.kubernetes.io/name: data-generation-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: data-generation-example
+  template:
+    metadata:
+      name: datagen   
+      labels:   
+        app.kubernetes.io/name: data-generation-example   
+    spec:   
+      containers:   
+      - image: lucaserf/obs:prints   
+        name: hello-world   
+        ports:   
         - containerPort: 8080
         volumeMounts:
         - name: varlog
