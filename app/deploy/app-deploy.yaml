@@ -4,7 +4,7 @@ metadata:
   name: hello-python-service
 spec:
   selector:
-    app: hello-python
+    app: data-generation-example
   ports:
   - protocol: "TCP"
     port: 8080
@@ -18,21 +18,21 @@ kind: Deployment
 metadata:
   name: datagen-deployment
   labels:
-    app.kubernetes.io/name: data-generation-example
+    app: data-generation-example
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: data-generation-example
+      app: data-generation-example
   template:
     metadata:
       name: datagen   
       labels:   
-        app.kubernetes.io/name: data-generation-example   
+        app: data-generation-example   
     spec:   
       containers:   
       - image: lucaserf/obs:prints   
-        name: hello-world   
+        name: datagen  
         ports:   
         - containerPort: 8080
         volumeMounts:
