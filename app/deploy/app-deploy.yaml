@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-python-service
+  name: server-gen-service
 spec:
   selector:
-    app: data-generation-example
+    app: server-gen-example
   ports:
   - protocol: "TCP"
     port: 8080
@@ -16,23 +16,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: datagen-deployment
+  name: server-gen-deployment
   labels:
-    app: data-generation-example
+    app: server-gen-example
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: data-generation-example
+      app: server-gen-example
   template:
     metadata:
-      name: datagen   
+      name: server-gen   
       labels:   
-        app: data-generation-example   
+        app: server-gen-example   
     spec:   
       containers:   
       - image: lucaserf/obs:server   
-        name: datagen  
+        name: server-gen  
         ports:   
         - containerPort: 8080
         volumeMounts:
