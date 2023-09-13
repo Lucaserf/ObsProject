@@ -38,6 +38,16 @@ spec:
         volumeMounts:
         - name: varlog
           mountPath: /var/log
+      - image: lucaserf/logging_agent:latest
+        name: logging-agent
+        volumeMounts:
+         - name: pvlog
+           mountPath: /var/log/pv
+         - name: varlog
+           mountPath: /var/log
       volumes:
       - name: varlog
         emptyDir: {}
+      - name: pvlog
+        persistentVolumeClaim:
+         claimName: myapp-log-pvc
