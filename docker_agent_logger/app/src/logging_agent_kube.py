@@ -34,6 +34,5 @@ while True:
             f.write("data rotated:\n")
             f.write(str(data))
 
-
     
     time.sleep(10)
