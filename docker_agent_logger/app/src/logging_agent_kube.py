@@ -1,12 +1,17 @@
 import time
 import os
 import shutil
+import pickle
+from pre_processing import preprocess
 
 root = "/"
 log_folder = "/var/log/"
 permanent_folder = "var/log/pv/logging_data"
 
-os.mkdir(permanent_folder)
+try:
+    os.mkdir(permanent_folder)
+except:
+    pass
 
 
 while True:
@@ -15,24 +20,35 @@ while True:
     print(data)
     #filtering
 
-    data = [x for x in data if "time" in x]
+    data = [x for x in data if "quotes" in x]
 
     print(data)
 
-    #log rotation
-    for d in data:
-        data_path = os.path.join(log_folder,d)
-        shutil.move(data_path,permanent_folder)
-
+    #log rotation and aggregation
 
     if len(data)> 0:
-        with open("/var/log/data_logging_agent.log","a") as f:
-            f.write("data rotated:\n")
-            f.write(str(data))
+        new_logs = []
+        new_logs_prep = []
+        for d in data:
+            data_path = os.path.join(log_folder,d)
 
-        with open("/var/log/pv/data_logging_agent.log","a") as f:
-            f.write("data rotated:\n")
-            f.write(str(data))
+            with open(data_path) as f:
+                logs = f.read()
 
+            new_logs.append(logs)
+
+            
+        
+            #preprocess 
+            new_logs_prep.append(preprocess(logs))
+
+
+            os.remove(data_path)
+
+        with open(os.path.join(permanent_folder,"data.log"),"a") as f:
+            f.write("\n".join(new_logs)+ "\n")
+
+        with open(os.path.join(permanent_folder,"encoded_data.log"),"ab") as f:
+            pickle.dump(tokens,f)
     
     time.sleep(10)

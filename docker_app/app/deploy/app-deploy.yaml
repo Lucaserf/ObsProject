@@ -31,7 +31,7 @@ spec:
         app: server-gen-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:server   
+      - image: lucaserf/obs:latest   
         name: server-gen  
         ports:   
         - containerPort: 8080
