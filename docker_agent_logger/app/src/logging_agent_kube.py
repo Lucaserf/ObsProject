@@ -20,7 +20,7 @@ while True:
     print(data)
     #filtering
 
-    data = [x for x in data if "quotes" in x]
+    data = [x for x in data if "openstacklogs" in x]
 
     print(data)
 
@@ -49,6 +49,6 @@ while True:
             f.write("\n".join(new_logs)+ "\n")
 
         with open(os.path.join(permanent_folder,"encoded_data.log"),"ab") as f:
-            pickle.dump(tokens,f)
+            pickle.dump(new_logs_prep,f)
     
     time.sleep(10)

@@ -23,6 +23,7 @@ list_of_quotes = re.split(r"\t",list_of_quotes)
 number_of_quotes = len(list_of_quotes)
 
 
+
 def elapsed():
     global i
     running = time.time() - START

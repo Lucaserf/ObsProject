@@ -1,21 +1,39 @@
 import time
+import pandas as pd 
 
 
-def elapsed():
-    print("calculating times")
-    running = time.time() - START
-    minutes, seconds = divmod(running, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours,24)
-    months, days = divmod(days,30)
-    print("done")
-    
-    with open("/var/log/time{}.log".format(running),"w") as f:
-        f.write("%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds))
-    return "%d:%02d:%02d:%02d:%02d" % (months,days,hours, minutes, seconds)
+
+df = pd.read_csv("app/OpenStack_2k.log_structured.csv")
+
+
+df = df.drop(["LineId","EventId","EventTemplate"],axis=1)
+
+def time_to_number(time):
+    time = time.split(":")
+
+    return float(time[0])*60*60+float(time[1])*60+float(time[2])
+
+df["Pid"] = df["Pid"].apply(str)
+
+df_time = df["Time"].apply(time_to_number)
+
+done = False
 
 START = time.time()
+i = 0
 
-while True:
-    print("Hello World! (up %s)\n" % elapsed())
-    time.sleep(5)
+while not done:
+    logs_appened = df[df_time < (time.time() - START)]
+    df = df.drop(logs_appened.index)
+
+
+    with open("/var/log/openstacklogs{}.log".format(i),"w") as f:
+        for i,r in logs_appened.iterrows():
+            f.write(" ".join(r))
+
+
+    time.sleep(2)
+    i +=1
+    
+    if not len(df)>0:
+        done=True
