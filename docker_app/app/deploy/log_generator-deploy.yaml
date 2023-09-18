@@ -16,7 +16,7 @@ spec:
         app: data-generation-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:gen   
+      - image: lucaserf/obs:sim_log   
         name: datagen  
         volumeMounts:
         - name: varlog

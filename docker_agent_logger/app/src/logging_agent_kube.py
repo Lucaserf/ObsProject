@@ -2,7 +2,8 @@ import time
 import os
 import shutil
 import pickle
-from pre_processing import preprocess
+import pandas as pd
+from pre_processing import *
 
 root = "/"
 log_folder = "/var/log/"
@@ -13,6 +14,22 @@ try:
 except:
     pass
 
+
+#we give the dataset as a given
+df = pd.read_csv("app/src/OpenStack_2k.log_structured.csv")
+df = df.drop(["LineId","EventId","EventTemplate"],axis=1)
+def time_to_number(time):
+    time = time.split(":")
+    return float(time[0])*60*60+float(time[1])*60+float(time[2])
+
+df["Pid"] = df["Pid"].apply(str)
+df_time = df["Time"].apply(time_to_number)
+logs = []
+for i,r in df.iterrows():
+    logs.append(" ".join(r))
+
+tokenizer = Tokenizer()
+tokenizer.training_tokenizer(logs)
 
 while True:
     
@@ -37,10 +54,8 @@ while True:
 
             new_logs.append(logs)
 
-            
-        
             #preprocess 
-            new_logs_prep.append(preprocess(logs))
+            new_logs_prep.append(tokenizer.preprocess(logs))
 
 
             os.remove(data_path)
