@@ -5,7 +5,7 @@ import transformers
 
 class Tokenizer():
     def __init__(self):
-        tokenizer = transformers.AutoTokenizer.from_pretrained("app/bert-base-cased_saved")
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained("app/bert-base-cased_saved")
         # self.tokenizer = transformers.AutoTokenizer.from_pretrained("../bert-base-cased_saved")
         # tokens = tokenizer(sentences,return_tensors="np",padding="max_length",max_length=50,return_attention_mask=False,return_token_type_ids =False)["input_ids"]
 
