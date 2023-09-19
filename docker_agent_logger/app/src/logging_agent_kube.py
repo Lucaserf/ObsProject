@@ -3,6 +3,7 @@ import os
 import shutil
 import pickle
 import pandas as pd
+import bz2
 from pre_processing import *
 
 root = "/"
@@ -30,6 +31,7 @@ for i,r in df.iterrows():
 
 tokenizer = Tokenizer()
 tokenizer.training_tokenizer(logs)
+i = 0
 
 while True:
     
@@ -43,7 +45,7 @@ while True:
 
     #log rotation and aggregation
 
-    if len(data)> 0:
+    if len(data)> 32:
         new_logs = []
         new_logs_prep = []
         for d in data:
@@ -60,10 +62,10 @@ while True:
 
             os.remove(data_path)
 
-        with open(os.path.join(permanent_folder,"data.log"),"a") as f:
-            f.write("\n".join(new_logs)+ "\n")
+        with bz2.open(os.path.join(permanent_folder,f"data_{i}.log"),"wb") as f:
+            pickle.dump("\n".join(new_logs)+ "\n",f)
 
-        with open(os.path.join(permanent_folder,"encoded_data.log"),"ab") as f:
+        with bz2.open(os.path.join(permanent_folder,f"encoded_data_{i}.log"),"wb") as f:
             pickle.dump(new_logs_prep,f)
     
     time.sleep(10)

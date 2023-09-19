@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataread-deployment
+  labels:
+    app: data-generation-example
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-reading-example
+  template:
+    metadata:
+      name: dataread   
+      labels:   
+        app: data-reading-example   
+    spec:   
+      containers:   
+      - image: lucaserf/obs:read_log   
+        name: dataread  
+        volumeMounts:
+         - name: pvlog
+           mountPath: /var/log/pv
+      volumes:
+      - name: pvlog
+        persistentVolumeClaim:
+         claimName: myapp-log-pvc
+
+

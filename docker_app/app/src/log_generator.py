@@ -23,7 +23,10 @@ START = time.time()
 i = 0
 
 while not done:
-    logs_appened = df[df_time < (time.time() - START)]
+    time = time.time() - START
+    print(len(df))
+    print(len(df_time))
+    logs_appened = df[df_time < time]
     df = df.drop(logs_appened.index)
 
 
