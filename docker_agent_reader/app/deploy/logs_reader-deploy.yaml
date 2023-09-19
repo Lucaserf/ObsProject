@@ -17,7 +17,8 @@ spec:
     spec:   
       containers:   
       - image: lucaserf/obs:read_log   
-        name: dataread  
+        name: dataread
+        imagePullPolicy: Always  
         volumeMounts:
          - name: pvlog
            mountPath: /var/log/pv

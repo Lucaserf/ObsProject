@@ -23,11 +23,10 @@ START = time.time()
 i = 0
 
 while not done:
-    time = time.time() - START
-    print(len(df))
-    print(len(df_time))
-    logs_appened = df[df_time < time]
-    df = df.drop(logs_appened.index)
+    mask_appened = df_time < (time.time() - START)
+    logs_appened = df[mask_appened]
+    df_time = df_time.drop(mask_appened)
+    df = df.drop(mask_appened)
 
 
     with open("/var/log/openstacklogs{}.log".format(i),"w") as f:

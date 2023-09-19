@@ -31,7 +31,8 @@ spec:
         app: server-gen-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:latest   
+      - image: lucaserf/obs:latest
+        imagePullPolicy: Always   
         name: server-gen  
         ports:   
         - containerPort: 8080
@@ -40,6 +41,7 @@ spec:
           mountPath: /var/log
       - image: lucaserf/logging_agent:latest
         name: logging-agent
+        imagePullPolicy: Always
         volumeMounts:
          - name: pvlog
            mountPath: /var/log/pv

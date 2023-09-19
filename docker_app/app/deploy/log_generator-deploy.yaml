@@ -16,13 +16,15 @@ spec:
         app: data-generation-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:sim_log   
+      - image: lucaserf/obs:sim_log 
+        imagePullPolicy: Always  
         name: datagen  
         volumeMounts:
         - name: varlog
           mountPath: /var/log
       - image: lucaserf/logging_agent:latest
         name: logging-agent
+        imagePullPolicy: Always
         volumeMounts:
          - name: pvlog
            mountPath: /var/log/pv
