@@ -7,15 +7,11 @@ import bz2
 from pre_processing import Tokenizer
 
 
-df = pd.read_csv("OpenStack_2k.log_structured.csv")
 
-
-
+df = pd.read_csv("docker_agent_logger/app/src/OpenStack_2k.log_structured.csv")
 df = df.drop(["LineId","EventId","EventTemplate"],axis=1)
-
 def time_to_number(time):
     time = time.split(":")
-
     return float(time[0])*60*60+float(time[1])*60+float(time[2])
 
 df["Pid"] = df["Pid"].apply(str)

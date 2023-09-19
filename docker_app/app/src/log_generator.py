@@ -20,22 +20,24 @@ df_time = df["Time"].apply(time_to_number)
 done = False
 
 START = time.time()
-i = 0
+counter_prints = 0
 
 while not done:
     mask_appened = df_time < (time.time() - START)
     logs_appened = df[mask_appened]
-    df_time = df_time.drop(mask_appened)
-    df = df.drop(mask_appened)
+    df_time = df_time.drop(df_time[mask_appened].index)
+    df = df.drop(logs_appened.index)
 
-
-    with open("/var/log/openstacklogs{}.log".format(i),"w") as f:
-        for i,r in logs_appened.iterrows():
-            f.write(" ".join(r))
+    if len(logs_appened) > 0:
+        with open("/var/log/openstacklogs{}.log".format(counter_prints),"w") as f:
+            for _,r in logs_appened.iterrows():
+                f.write(" ".join(r)+ "\n")
+        counter_prints +=1
 
 
     time.sleep(2)
-    i +=1
     
     if not len(df)>0:
         done=True
+
+    
