@@ -8,7 +8,7 @@ from pre_processing import *
 
 root = "/"
 log_folder = "/var/log/"
-permanent_folder = "var/log/pv/logging_data"
+permanent_folder = "var/log/pv/logging_data/"
 
 try:
     os.mkdir(permanent_folder)
@@ -16,32 +16,17 @@ except:
     pass
 
 
-#we give the dataset as a given
-df = pd.read_csv("app/src/OpenStack_2k.log_structured.csv")
-df = df.drop(["LineId","EventId","EventTemplate"],axis=1)
-def time_to_number(time):
-    time = time.split(":")
-    return float(time[0])*60*60+float(time[1])*60+float(time[2])
-
-df["Pid"] = df["Pid"].apply(str)
-df_time = df["Time"].apply(time_to_number)
-logs = []
-for i,r in df.iterrows():
-    logs.append(" ".join(r))
-
-tokenizer = Tokenizer()
-tokenizer.training_tokenizer(logs)
+#we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
+tokenizer = Tokenizer("./app/logs_tokenizer")
 i = 0
 
 while True:
     
-    data = os.listdir("/var/log/")
+    data = os.listdir(log_folder)
     #filtering
 
     data = [x for x in data if "openstacklogs" in x]
-    data.sort(key=lambda x: os.path.getmtime("/var/log/"+x))
-
-    print(data)
+    data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
     #log rotation and aggregation
 

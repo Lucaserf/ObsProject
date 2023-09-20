@@ -16,9 +16,9 @@ spec:
         app: data-reading-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:read_log   
+      - image: lucaserf/reading_agent:latest
+        imagePullPolicy: Always     
         name: dataread
-        imagePullPolicy: Always  
         volumeMounts:
          - name: pvlog
            mountPath: /var/log/pv
