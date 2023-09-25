@@ -6,6 +6,8 @@ import pandas as pd
 import bz2
 # from pre_processing import *
 
+
+
 permanent_folder = "./var/log/pv/logging_data/"
 # tokenizer = Tokenizer("./app/logs_tokenizer")
 

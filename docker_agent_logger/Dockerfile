@@ -5,4 +5,4 @@ COPY . ./
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python3","-u", "app/src/logging_agent_kube.py"]
+CMD ["python3","-u", "app/src/logging_agent_cloudevents.py"]

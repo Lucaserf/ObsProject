@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: datagen-deployment
+  name: cloudevents-gen-deployment
   labels:
-    app: data-generation-example
+    app: cloudevents-gen-example
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: data-generation-example
+      app: cloudevents-gen-example
   template:
     metadata:
-      name: datagen   
+      name: cloudevents-gen   
       labels:   
-        app: data-generation-example   
+        app: cloudevents-gen-example   
     spec:   
       containers:   
-      - image: lucaserf/obs:sim_log 
-        imagePullPolicy: Always  
-        name: datagen  
+      - image: lucaserf/obs:sim_log
+        imagePullPolicy: Always   
+        name: sim-gen  
         volumeMounts:
         - name: varlog
           mountPath: /var/log
-      - image: lucaserf/logging_agent:nats
+      - image: lucaserf/logging_agent:cloudevents
         name: logging-agent
         imagePullPolicy: Always
         volumeMounts:
@@ -36,5 +36,3 @@ spec:
       - name: pvlog
         persistentVolumeClaim:
          claimName: myapp-log-pvc
-
-

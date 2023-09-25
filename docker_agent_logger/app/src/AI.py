@@ -1,8 +1,8 @@
 
 
 import transformers
-import tensorflow as tf
-from keras_nlp.layers import TokenAndPositionEmbedding,TransformerEncoder
+# import tensorflow as tf
+# from keras_nlp.layers import TokenAndPositionEmbedding,TransformerEncoder
 import numpy as np
 
 class Tokenizer():
@@ -17,8 +17,8 @@ class Tokenizer():
         self.tokenizer.save_pretrained(path)
 
     def preprocess(self,data):
-        # tokens = self.tokenizer(data)["input_ids"]
-        tokens = self.tokenizer(data,padding="max_length",truncation=True,return_tensors="tf")
+        tokens = self.tokenizer(data)["input_ids"]
+        # tokens = self.tokenizer(data,padding="max_length",truncation=True,return_tensors="tf")
         return tokens
 
 

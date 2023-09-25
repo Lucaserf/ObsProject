@@ -1,2 +1,5 @@
 transformers
 pandas
+cloudevents
+tensorflow
+keras-nlp 
