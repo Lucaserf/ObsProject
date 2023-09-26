@@ -6,11 +6,11 @@ import transformers
 import numpy as np
 
 class Tokenizer():
-    def __init__(self,path,vocab_size = 32000, max_len=512):
+    def __init__(self,path, max_len=512):
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(path,max_lenth = max_len)
         # tokens = tokenizer(sentences,return_tensors="np",padding="max_length",max_length=50,return_attention_mask=False,return_token_type_ids =False)["input_ids"]
 
-    def training_tokenizer(self,training_corpus):
+    def training_tokenizer(self,training_corpus,vocab_size = 32000):
         self.tokenizer = self.tokenizer.train_new_from_iterator(training_corpus, vocab_size)
 
     def saving_tokenizer(self,path):

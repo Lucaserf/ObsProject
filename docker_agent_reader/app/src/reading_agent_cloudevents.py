@@ -13,12 +13,14 @@ def home():
 
     # you can access cloudevent fields as seen below
     
-    data = event.get_data()
-    print(
-        f"Found {event['id']} from {event['source']} with type "
-        f"{event['type']} and specversion {event['specversion']}"
-        f" and data {data}"
-    )
+    # data = event.get_data()
+    # print(
+    #     f"Found {event['id']} from {event['source']} with type "
+    #     f"{event['type']} and specversion {event['specversion']}"
+    #     f" and data {data}"
+    # )
+    print("Received data")
+
 
     return "", 204
 

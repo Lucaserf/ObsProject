@@ -6,7 +6,9 @@ import os
 import shutil
 import pickle
 import pandas as pd
+import numpy as np
 import bz2
+import sys
 from AI import *
 
 
@@ -33,7 +35,7 @@ while True:
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
     #log rotation and aggregation
-    if len(data)> 32:
+    if len(data)> 1024:
 
         new_logs = []
         new_logs_prep = []
@@ -55,16 +57,49 @@ while True:
             "source": "simulation",
         }
         
-        data = {"data": new_logs_prep}
-        event = CloudEvent(attributes, data)
+        
+        event = CloudEvent(attributes, {"data": new_logs_prep})
 
         # Creates the HTTP request representation of the CloudEvent in binary content mode
         headers, body = to_binary(event)
+        # t = time.time()
+        # print("sending encoded data:")
 
+        # r = requests.post("http://10.99.147.168:3000", data=body, headers=headers)
 
-        r = requests.post("http://10.99.147.168:3000", data=body, headers=headers)
+        # print(f"time to send: {time.time()-t}")
 
-        print(r.status_code)
+        # event = CloudEvent(attributes, {"data": new_logs})
+
+        # headers, body = to_binary(event)
+        # t = time.time()
+        # print("sending raw data:")
+
+        # r = requests.post("http://10.99.147.168:3000", data=body, headers=headers)
+
+        # print(f"time to send: {time.time()-t}")
+
+        compressed_data = bz2.compress(pickle.dumps(new_logs_prep))
+        print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
+
+        print("sending compressed encoded data:")
+        times = []
+        for _ in range(100):
+            t=time.time()
+            r = requests.post("http://10.99.147.168:3000",data=compressed_data,headers=headers)
+            times.append(time.time()-t)
+        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+
+        compressed_data = bz2.compress(pickle.dumps(new_logs))
+        print("lenght of compressed data: ",sys.getsizeof(compressed_data))
+
+        print("sending compressed data:")
+        times = []
+        for _ in range(100):
+            t=time.time()
+            r = requests.post("http://10.99.147.168:3000",data=compressed_data,headers=headers)
+            times.append(time.time()-t)
+        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
 
     time.sleep(2)
 
