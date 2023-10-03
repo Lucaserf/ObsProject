@@ -1,1 +1,2 @@
 *.log
+docker_agent_logger/app/data/*
