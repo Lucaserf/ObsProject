@@ -7,7 +7,7 @@ import pandas as pd
 
 def time_to_number(time):
     time = time.split(":")
-    speed_up = 325
+    speed_up = 325 
     return (float(time[0])*60*60+float(time[1])*60+float(time[2]))/speed_up 
 
 

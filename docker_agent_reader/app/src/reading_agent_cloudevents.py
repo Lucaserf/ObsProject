@@ -1,6 +1,8 @@
 from flask import Flask, request
-
+import bz2
 from cloudevents.http import from_http
+import pickle
+import sys
 
 app = Flask(__name__)
 
@@ -11,15 +13,19 @@ def home():
     # create a CloudEvent
     event = from_http(request.headers, request.get_data())
 
+
     # you can access cloudevent fields as seen below
     
-    # data = event.get_data()
-    # print(
-    #     f"Found {event['id']} from {event['source']} with type "
-    #     f"{event['type']} and specversion {event['specversion']}"
-    #     f" and data {data}"
-    # )
-    print("Received data")
+    data = pickle.loads(bz2.decompress(event.get_data()))
+    
+
+
+    print(
+        f"Found {event['id']} from {event['source']} with type "
+        f"{event['type']} and specversion {event['specversion']}, size {event['size']}"
+        f" and data {sys.getsizeof(data)}, {data[:2]}"
+    )
+
 
 
     return "", 204

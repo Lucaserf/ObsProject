@@ -4,6 +4,7 @@ import transformers
 # import tensorflow as tf
 # from keras_nlp.layers import TokenAndPositionEmbedding,TransformerEncoder
 import numpy as np
+import re
 
 class Tokenizer():
     def __init__(self,path, max_len=512):
@@ -17,6 +18,7 @@ class Tokenizer():
         self.tokenizer.save_pretrained(path)
 
     def preprocess(self,data):
+        data = [re.sub(r'\b[a-zA-Z\d-]{20,}\b', '*', log) for log in data]
         tokens = self.tokenizer(data)["input_ids"]
         # tokens = self.tokenizer(data,padding="max_length",truncation=True,return_tensors="tf")
         return tokens
@@ -72,14 +74,5 @@ class Model():
             epochs=epochs,
             callbacks = [es_cb,cp_cb]
         )
-
-
-        
-        
-
-
-
-
-
     
 
