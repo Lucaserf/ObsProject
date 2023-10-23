@@ -2,8 +2,8 @@ import sys
 sys.dont_write_bytecode = True
 from AI import *
 import os
-import drain3
-from drain3.file_persistence import FilePersistence
+# import drain3
+# from drain3.file_persistence import FilePersistence
 
 os.chdir("./docker_agent_logger/app/")
 
@@ -13,7 +13,7 @@ with open("./data/openstack_normal1.log") as f:
 
 
 
-logs = [re.sub(r'\b[a-zA-Z\d-]{20,}\b', '*', log) for log in logs]
+logs = [re.sub(r'\b[a-zA-Z\d-_]{20,}\b', '*', log) for log in logs]
 # persistence = FilePersistence("./drain/drain3_state.bin")
 
 
