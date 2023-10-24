@@ -90,21 +90,27 @@ class Model():
 
         
 
-    def train_model(self,train_ds,val_ds,epochs,chkpt):
+    def train_model(self,train_ds,epochs,chkpt):
 
 
         self.vae.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5))
 
 
-        es_cb = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
-        cp_cb = tf.keras.callbacks.ModelCheckpoint(filepath = chkpt, monitor='val_loss', verbose=0, save_best_only=True, mode='auto')
+        # es_cb = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
+        # cp_cb = tf.keras.callbacks.ModelCheckpoint(filepath = chkpt, monitor='total_loss', verbose=0, save_best_only=True, mode='auto')
+        cp_cb = SavingCallback(chkpt)
 
         self.vae.fit(
             train_ds,
-            validation_data=val_ds,
             epochs=epochs,
-            callbacks = [es_cb,cp_cb]
+            callbacks = [cp_cb]
         )
+
+class SavingCallback(tf.keras.callbacks.Callback):
+    def __init__(self,chkpt):
+        self.chkpt = chkpt
+    def on_epoch_end(self,epoch,logs=None):
+        self.model.save_model(self.chkpt)
     
 
 class Sampling(tf.keras.layers.Layer):
@@ -153,7 +159,45 @@ class VAE(tf.keras.Model):
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
         return {
-            "loss": self.total_loss_tracker.result(),
+            "total_loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
         }
+    def call(self,data):
+        z_mean, z_log_var,z = self.encoder(data)
+        z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
+        reconstruction = self.decoder([data,z])
+        return reconstruction
+    
+    def save_model(self,chkpt):
+        self.encoder.save_weights(chkpt+"encoder")
+        self.decoder.save_weights(chkpt+"decoder")
+
+    def load_model(self,chkpt):
+        self.encoder.load_weights(chkpt+"encoder")
+        self.decoder.load_weights(chkpt+"decoder")
+
+    def encode(self,data):
+        z_mean, z_log_var,z = self.encoder(data)
+        return z
+    def decode(self,data,z):
+        z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
+        reconstruction = self.decoder([data,z])
+        return reconstruction
+
+    # def test_step(self,data):
+    #     z_mean, z_log_var,z = self.encoder(data)
+    #     z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
+    #     reconstruction = self.decoder([data,z])
+    #     reconstruction_loss = tf.reduce_mean(
+    #         tf.reduce_sum(
+    #             tf.keras.losses.sparse_categorical_crossentropy(data, reconstruction, from_logits=True), axis=(1)
+    #         )
+    #     )
+    #     kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
+    #     kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
+    #     total_loss = reconstruction_loss + kl_loss
+    #     self.total_loss_tracker.update_state(total_loss)
+    #     return {
+    #         "total_loss": self.total_loss_tracker.result()
+    #     }

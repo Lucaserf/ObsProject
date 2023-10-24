@@ -3,10 +3,10 @@ sys.dont_write_bytecode = True
 import pandas as pd
 import pickle
 import bz2
-import transformers
 from AI import *
 import tensorflow as tf
 import random
+import matplotlib.pyplot as plt
 
 
 # df = pd.read_csv("docker_agent_logger/app/data/OpenStack_2k.log_structured.csv")
@@ -26,12 +26,12 @@ import random
 
 vocab_size = 5000
 max_len=512
-epochs=200
+epochs=32
 chkpt = "docker_agent_logger/app/classifier/"
 
 raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
-    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-32.log")
-    .batch(64)
+    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/test.log")
+    .batch(32)
     .shuffle(buffer_size=256)
 )
 
@@ -54,24 +54,33 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
     tf.data.AUTOTUNE
 )
 
-val_split = 0.2
-ds_size = ds.cardinality().numpy()
+# val_split = 0.2
+# ds_size = ds.cardinality().numpy()
 
-train_size = int((1-val_split) * ds_size)
-val_size = int(val_split * ds_size)
+# train_size = int((1-val_split) * ds_size)
+# val_size = int(val_split * ds_size)
 
+# train_ds = ds.take(train_size)
+# val_ds = ds.skip(train_size).take(val_size)
 
-train_ds = ds.take(train_size)
-val_ds = ds.skip(train_size).take(val_size)
 
 
 model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
 
-model.train_model(train_ds,val_ds,epochs=epochs,chkpt=chkpt)
+model.train_model(ds,epochs=epochs,chkpt=chkpt)
 
 
 
+def plot_label_clusters(vae, data):
+    # display a 2D plot of the digit classes in the latent space
+    z_mean, _, _ = vae.encoder.predict(data)
+    plt.figure(figsize=(12, 10))
+    plt.scatter(z_mean[:, 0], z_mean[:, 1])
+    plt.colorbar()
+    plt.xlabel("z[0]")
+    plt.ylabel("z[1]")
+    plt.savefig("cluster.png")
 
-
+plot_label_clusters(model.vae, ds)
 
 
