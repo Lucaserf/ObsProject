@@ -11,7 +11,7 @@ class Tokenizer():
         
         self.tokenizer = keras_nlp.tokenizers.WordPieceTokenizer(
             vocabulary=vocab,
-            sequence_length=max_len
+            # sequence_length=max_len
         )
 
         self.start_packer = keras_nlp.layers.StartEndPacker(
@@ -25,7 +25,7 @@ class Tokenizer():
         tokens = self.tokenizer(data)
         features = self.start_packer(tokens)
         labels = tokens
-        return tokens
+        return features
 
 
     def decode(self,data):
@@ -48,7 +48,7 @@ class Model():
         encoding = keras_nlp.layers.TransformerEncoder(
             num_heads=4,
             intermediate_dim=latent_dim,
-            name = "encoder"
+            name = "encoding"
         )(input_embedding)
 
         z_mean = tf.keras.layers.Dense(latent_dim, name="z_mean")(encoding[:,0,:])
@@ -58,35 +58,40 @@ class Model():
 
         self.encoder = tf.keras.Model(inputs=[input_ids],
             outputs=[z_mean, z_log_var,z],
-            name = "classifier")
+            name = "encoder"
+        )
 
         self.encoder.summary()
 
-        decoder_input = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name='decoder_input')
+        # decoder_input = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name='decoder_input')
         latent_space_input = tf.keras.layers.Input(shape=(max_len,latent_dim,), dtype=tf.float32, name='latent_space_input')
-        decoder_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
-            vocabulary_size=vocab_size,
-            sequence_length=max_len,
-            embedding_dim=latent_dim,
-            mask_zero=True,
-            name = "decoder_embedding"
-        )(decoder_input)
+        # decoder_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
+        #     vocabulary_size=vocab_size,
+        #     sequence_length=max_len,
+        #     embedding_dim=latent_dim,
+        #     mask_zero=True,
+        #     name = "decoder_embedding"
+        # )(decoder_input)
 
-        decoding = keras_nlp.layers.TransformerDecoder(
-            num_heads=4,
-            intermediate_dim=latent_dim,
-            name = "decoder"
-        )(decoder_embedding,latent_space_input)
+        # decoding = keras_nlp.layers.TransformerDecoder(
+        #     num_heads=4,
+        #     intermediate_dim=latent_dim,
+        #     name = "decoder"
+        # )(decoder_embedding,latent_space_input)
+        hidden_layer = tf.keras.layers.Dense(latent_dim,activation="relu",name="hidden_layer")(latent_space_input)
 
-        output = tf.keras.layers.Dense(vocab_size, name="output")(decoding)
+        output = tf.keras.layers.Dense(vocab_size, name="output")(hidden_layer)
 
-        self.decoder = tf.keras.Model(inputs=[decoder_input,latent_space_input],
+        self.decoder = tf.keras.Model(inputs=[latent_space_input],
             outputs=[output],
             name = "decoder")
 
         self.decoder.summary()
 
-        self.vae = VAE(encoder=self.encoder,decoder=self.decoder)
+
+
+        self.vae = VAE(encoder=self.encoder,decoder=self.decoder,latent_dim=latent_dim,max_len=max_len)
+
 
         
 
@@ -110,7 +115,7 @@ class SavingCallback(tf.keras.callbacks.Callback):
     def __init__(self,chkpt):
         self.chkpt = chkpt
     def on_epoch_end(self,epoch,logs=None):
-        self.model.save_model(self.chkpt)
+        self.model.save_model(self.chkpt+str(epoch))
     
 
 class Sampling(tf.keras.layers.Layer):
@@ -125,10 +130,12 @@ class Sampling(tf.keras.layers.Layer):
 
 
 class VAE(tf.keras.Model):
-    def __init__(self,encoder,decoder,**kwargs):
+    def __init__(self,encoder,decoder,latent_dim,max_len,**kwargs):
         super().__init__(**kwargs)
         self.encoder = encoder
         self.decoder = decoder
+        self.latent_dim = latent_dim
+        self.max_len = max_len
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="recostruction_loss")
         self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
@@ -143,8 +150,8 @@ class VAE(tf.keras.Model):
     def train_step(self,data):
         with tf.GradientTape() as tape:
             z_mean, z_log_var,z = self.encoder(data)
-            z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
-            reconstruction = self.decoder([data,z])
+            z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim))
+            reconstruction = self.decoder(z)
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
                     tf.keras.losses.sparse_categorical_crossentropy(data, reconstruction, from_logits=True), axis=(1)
@@ -165,8 +172,8 @@ class VAE(tf.keras.Model):
         }
     def call(self,data):
         z_mean, z_log_var,z = self.encoder(data)
-        z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
-        reconstruction = self.decoder([data,z])
+        z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim))
+        reconstruction = self.decoder(z)
         return reconstruction
     
     def save_model(self,chkpt):
@@ -180,9 +187,11 @@ class VAE(tf.keras.Model):
     def encode(self,data):
         z_mean, z_log_var,z = self.encoder(data)
         return z
-    def decode(self,data,z):
-        z = tf.expand_dims(z,axis=1)*tf.ones((1,512,256))
-        reconstruction = self.decoder([data,z])
+    def decode(self,z):
+        z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim))
+        logits = self.decoder(z)
+        # reconstruction = tf.argmax(logits,axis=-1)
+        reconstruction = tf.random.categorical(logits=tf.squeeze(logits,axis=0),num_samples=1)
         return reconstruction
 
     # def test_step(self,data):

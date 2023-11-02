@@ -1,2 +1,4 @@
 *.log
 docker_agent_logger/app/data/*
+results/*
+docker_agent_logger/app/classifier/*
