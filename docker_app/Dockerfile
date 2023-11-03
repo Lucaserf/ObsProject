@@ -5,4 +5,4 @@ COPY . ./
 # EXPOSE 8080
 ENV PYTHONUNBUFFERED=1
 # CMD ["python3","-u", "app/src/app.py"]
-CMD ["python3","-u", "app/src/log_generator.py"]
+CMD ["python3","-u", "app/src/periodic_log_generator.py"]

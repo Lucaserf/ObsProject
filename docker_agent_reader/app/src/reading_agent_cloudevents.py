@@ -3,9 +3,13 @@ import bz2
 from cloudevents.http import from_http
 import pickle
 import sys
+from AI import AnomalyDetector
 
+
+latent_space_dim = 256
+threshold = 10
+anomaly_detector = AnomalyDetector(latent_space_dim,threshold)
 app = Flask(__name__)
-
 
 # create an endpoint at http://localhost:/3000/
 @app.route("/", methods=["POST"])
@@ -27,8 +31,11 @@ def home():
     )
 
 
+    loss, anomaly = anomaly_detector.detect(data)
+    anomaly_detector.train_step(data)
 
-    return "", 204
+
+    return f"loss: {loss}, anomaly: {anomaly}", 204
 
 
 if __name__ == "__main__":
