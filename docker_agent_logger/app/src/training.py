@@ -24,28 +24,28 @@ import matplotlib.pyplot as plt
 
 
 
-vocab_size = 5000
+vocab_size = 4000
 max_len=256
 epochs=64
 chkpt = "docker_agent_logger/app/classifier/"
 
 raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
-    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-32.log")
+    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
     .batch(32)
     .shuffle(buffer_size=256)
 )
 
-# vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
-#             raw_ds,
-#             vocabulary_size=vocab_size,
-#             reserved_tokens=["[PAD]", "[UNK]", "[BOS]","[EOS]"],
-#         )
+vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
+            raw_ds,
+            vocabulary_size=vocab_size,
+            reserved_tokens=["[PAD]", "[UNK]","[SEP]","[BOS]","[EOS]"],
+        )
 
-# with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
-#     pickle.dump(vocab,f)
+with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
+    pickle.dump(vocab,f)
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
-    vocab = pickle.load(f)
+# with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
+#     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 

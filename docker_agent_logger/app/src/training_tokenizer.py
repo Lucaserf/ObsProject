@@ -1,48 +1,35 @@
 import sys
 sys.dont_write_bytecode = True
 from AI import *
-import os
-# import drain3
-# from drain3.file_persistence import FilePersistence
-
-os.chdir("./docker_agent_logger/app/")
-
-with open("./data/openstack_normal1.log") as f:
-    logs = f.read().split("\n")[:-1]
+import keras_nlp
+import pickle
+import tensorflow as tf
 
 
+vocab_size = 4000
+max_len=256
+chkpt = "docker_agent_logger/app/classifier/"
+
+raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
+    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
+    .batch(32)
+    .shuffle(buffer_size=256)
+)
+
+def parsing(data):
+    data = tf.strings.regex_replace(data, r'\b[a-zA-Z\d\-_\.]{20,}\b', '*')
+    return data
 
 
-logs = [re.sub(r'\b[a-zA-Z\d-_]{20,}\b', '*', log) for log in logs]
-# persistence = FilePersistence("./drain/drain3_state.bin")
+ds = raw_ds.map(parsing, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+    tf.data.AUTOTUNE
+)
 
+vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
+            ds,
+            vocabulary_size=vocab_size,
+            reserved_tokens=["[PAD]", "[UNK]","[SEP]","[BOS]","[EOS]"],
+        )
 
-# config = drain3.template_miner_config.TemplateMinerConfig()
-# config.load("./drain/drain3.ini")
-
-# template_miner = drain3.TemplateMiner(persistence_handler=persistence,config=config)
-
-
-# for log in logs:
-#     result = template_miner.add_log_message(log)
-
-# template_miner.save_state("done training")
-
-# for log_line in logs[:10]:
-#     cluster = template_miner.match(log_line)
-#     if cluster is None:
-#         print(f"No match found")
-#     else:
-#         template = cluster.get_template()
-#         print(log_line)
-#         print(f"Matched template #{cluster.cluster_id}: {template}")
-#         print(f"Parameters: {template_miner.get_parameter_list(template, log_line)}")
-#         print()
-
-tokenizer = Tokenizer("./bert-base-cased_saved", max_len=512)
-
-dataset = (i for i in logs)
-
-tokenizer.training_tokenizer(dataset,vocab_size = 32000)
-
-tokenizer.saving_tokenizer("./logs_tokenizer")
+with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
+    pickle.dump(vocab,f)
