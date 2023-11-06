@@ -1,4 +1,4 @@
 *.log
-docker_agent_logger/app/data/*
+persistent_volume/data/*
 results/*
 docker_agent_logger/app/classifier/*

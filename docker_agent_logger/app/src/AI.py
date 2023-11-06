@@ -146,6 +146,7 @@ class VAE(tf.keras.Model):
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="recostruction_loss")
         self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-5)
 
     @property
     def metrics(self):

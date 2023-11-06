@@ -2,11 +2,11 @@ import time
 import pandas as pd 
 
 
+
+data_folder = "/var/data/"
 #first datanode hdfsv2
-with open("app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log") as f:
+with open(data_folder+"HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log") as f:
     logs = f.read().split("\n")[:-1]
-
-
 
 done = False
 START = time.time()

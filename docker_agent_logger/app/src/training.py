@@ -68,7 +68,7 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
 
 model.vae.load_model(chkpt=chkpt+str(31))
-
+ 
 # model.train_model(ds,epochs=epochs,chkpt=chkpt+"test2")
 
 

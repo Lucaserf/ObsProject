@@ -23,7 +23,7 @@ class AnomalyDetector():
         )
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="recostruction_loss")
-
+        self.fixed_model.summary()
 
     def train_step(self,data):
         with tf.GradientTape() as tape:

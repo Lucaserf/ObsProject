@@ -27,15 +27,16 @@ def home():
     print(
         f"Found {event['id']} from {event['source']} with type "
         f"{event['type']} and specversion {event['specversion']}, size {event['size']}"
-        f" and data {sys.getsizeof(data)}, {data[:2]}"
+        f" and data {data.shape}"
     )
 
 
-    loss, anomaly = anomaly_detector.detect(data)
-    anomaly_detector.train_step(data)
+    # loss, anomaly = anomaly_detector.detect(data)
+    # anomaly_detector.train_step(data)
 
+    # print(loss,anomaly)
 
-    return f"loss: {loss}, anomaly: {anomaly}", 204
+    return "", 204
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ max_len=256
 # with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
 #     pickle.dump(vocab,f)
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
+with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
@@ -51,12 +51,13 @@ while True:
 
     data = [x for x in data if "HDFS" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
+    time.sleep(0.01)
 
     #log rotation and aggregation
     if len(data)>= 64:
 
         new_logs = []
-        new_logs_prep = []
+
         for d in data[:64]:
             data_path = os.path.join(log_folder,d)
 
@@ -67,64 +68,65 @@ while True:
 
             os.remove(data_path)
 
-    #first step of preprocessing
-    parsed_logs += tokenizer.parsing(logs)
-
-    #second step of preprocessing
-    vectorized_logs = tokenizer.vectorization(parsed_logs)
-
-    #third step of preprocessing
-    enbedded_logs = model.vae.encoder(vectorized_logs)
 
 
-    new_logs_prep += enbedded_logs
-    
+        #first step of preprocessing
+        parsed_logs = tokenizer.parsing(new_logs)
 
+        #second step of preprocessing
+        vectorized_logs = tokenizer.vectorization(parsed_logs)
+
+        #third step of preprocessing
+        enbedded_logs = model.vae.encoder(vectorized_logs)
+
+        new_logs_prep = enbedded_logs
         
 
-    compressed_data = bz2.compress(pickle.dumps(new_logs))
-    print("lenght of compressed data: ",sys.getsizeof(compressed_data))
-    # compressed_data = compressed_data*100
-    # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
+            
 
-    headers, _ = to_binary(CloudEvent({
-        "type": "logs",
-        "source": "simulation",
-        "size": str(sys.getsizeof(compressed_data)),
-    }, {"data": []}))
+        # compressed_data = bz2.compress(pickle.dumps(new_logs))
+        # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
+        # # compressed_data = compressed_data*100
+        # # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
 
-
-    print("sending compressed data:")
-    times = []
-    for _ in range(100):
-        t=time.time()
-        r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-        times.append(time.time()-t)
-    print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+        # headers, _ = to_binary(CloudEvent({
+        #     "type": "logs",
+        #     "source": "simulation",
+        #     "size": str(sys.getsizeof(compressed_data)),
+        # }, {"data": []}))
 
 
-    compressed_data = bz2.compress(pickle.dumps(new_logs_prep))
-    print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
-    # compressed_data = compressed_data*100
-    # print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
-
-    headers, _ = to_binary(CloudEvent({
-        "type": "encoded logs",
-        "source": "simulation",
-        "size": str(sys.getsizeof(compressed_data)),
-    }, {"data": []}))
-
-    print("sending compressed encoded data:")
-    times = []
-    for _ in range(100):
-        t=time.time()
-        r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-        times.append(time.time()-t)
-    print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+        # print("sending compressed data:")
+        # times = []
+        # for _ in range(100):
+        #     t=time.time()
+        #     r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+        #     times.append(time.time()-t)
+        # print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
 
 
-    #training step
-    metrics = model.train_step(vectorized_logs)
-    print(metrics)
-        
+        compressed_data = bz2.compress(pickle.dumps(new_logs_prep))
+        print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
+        # compressed_data = compressed_data*100
+        # print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
+
+        headers, _ = to_binary(CloudEvent({
+            "type": "encoded logs",
+            "source": "simulation",
+            "size": str(sys.getsizeof(compressed_data)),
+        }, {"data": []}))
+
+        print("sending compressed encoded data:")
+        times = []
+        for _ in range(100):
+            t=time.time()
+            r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+            times.append(time.time()-t)
+        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+
+
+        #training step
+        metrics = model.vae.train_step(vectorized_logs)
+        print(metrics)
+            
 
