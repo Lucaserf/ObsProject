@@ -27,7 +27,7 @@ class Tokenizer():
     def vectorization(self,data):
         tokens = self.tokenizer(data)
         features = self.start_packer(tokens)
-        labels = tokens
+        # labels = tokens
         return features
 
     def preprocess(self,data):

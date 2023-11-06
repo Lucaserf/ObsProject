@@ -18,7 +18,7 @@ while not done:
     with open("/var/log/HDFS{}.log".format(counter_prints),"w") as f:
             f.write(logs[counter_prints]+"\n")
     counter_prints +=1
-    time.sleep(0.05)
+    time.sleep(0.1)
 
     if counter_prints == max_len:
         done = True

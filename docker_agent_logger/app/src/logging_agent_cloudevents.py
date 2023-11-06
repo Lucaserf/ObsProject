@@ -77,32 +77,32 @@ while True:
         vectorized_logs = tokenizer.vectorization(parsed_logs)
 
         #third step of preprocessing
-        enbedded_logs = model.vae.encoder(vectorized_logs)
+        enbedded_logs = model.vae.encode(vectorized_logs)
 
         new_logs_prep = enbedded_logs
         
 
             
 
-        # compressed_data = bz2.compress(pickle.dumps(new_logs))
+        compressed_data = bz2.compress(pickle.dumps(new_logs))
+        print("lenght of compressed data: ",sys.getsizeof(compressed_data))
+        # compressed_data = compressed_data*100
         # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
-        # # compressed_data = compressed_data*100
-        # # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
 
-        # headers, _ = to_binary(CloudEvent({
-        #     "type": "logs",
-        #     "source": "simulation",
-        #     "size": str(sys.getsizeof(compressed_data)),
-        # }, {"data": []}))
+        headers, _ = to_binary(CloudEvent({
+            "type": "logs",
+            "source": "simulation",
+            "size": str(sys.getsizeof(compressed_data)),
+        }, {"data": []}))
 
 
-        # print("sending compressed data:")
-        # times = []
-        # for _ in range(100):
-        #     t=time.time()
-        #     r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-        #     times.append(time.time()-t)
-        # print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+        print("sending compressed data:")
+        times = []
+        for _ in range(1):
+            t=time.time()
+            r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+            times.append(time.time()-t)
+        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
 
 
         compressed_data = bz2.compress(pickle.dumps(new_logs_prep))
@@ -118,7 +118,7 @@ while True:
 
         print("sending compressed encoded data:")
         times = []
-        for _ in range(100):
+        for _ in range(1):
             t=time.time()
             r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
             times.append(time.time()-t)

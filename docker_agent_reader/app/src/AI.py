@@ -4,26 +4,22 @@ class AnomalyDetector():
     def __init__(self,latent_space_dim,threshold):
         tf.random.set_seed(42)
         self.threshold = threshold
-        self.fixed_model = tf.keras.Sequential(
-                [   
-                    tf.keras.layers.InputLayer(input_shape=(latent_space_dim,), name="input"),
-                    tf.keras.layers.Dense(128, activation="relu", name="layer1"),
-                    tf.keras.layers.Dense(128, activation="relu", name="layer2"),
-                    tf.keras.layers.Dense(128, name="layer3"),
-                ]
-            )
+
+        inputs = tf.keras.layers.Input(shape=(latent_space_dim,))
+        hidden_layer = tf.keras.layers.Dense(128, activation="relu")(inputs)
+        outputs = tf.keras.layers.Dense(128)(hidden_layer)
+        self.fixed_model = tf.keras.Model(inputs, outputs,name="fixed_model")
         self.fixed_model.trainable = False
-        self.trainable_model = tf.keras.Sequential(
-            [
-                tf.keras.layers.InputLayer(input_shape=(latent_space_dim,), name="input"),
-                tf.keras.layers.Dense(128, activation="relu", name="layer1"),
-                tf.keras.layers.Dense(128, activation="relu", name="layer2"),
-                tf.keras.layers.Dense(128, name="layer3"),
-            ]
-        )
+
+        inputs = tf.keras.layers.Input(shape=(latent_space_dim,))
+        hidden_layer = tf.keras.layers.Dense(128, activation="relu")(inputs)
+        outputs = tf.keras.layers.Dense(128)(hidden_layer)
+        self.trainable_model = tf.keras.Model(inputs, outputs,name="trainable_model")
+
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="recostruction_loss")
         self.fixed_model.summary()
+        self.trainable_model.summary()
 
     def train_step(self,data):
         with tf.GradientTape() as tape:

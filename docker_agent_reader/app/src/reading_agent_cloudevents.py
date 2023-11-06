@@ -27,14 +27,15 @@ def home():
     print(
         f"Found {event['id']} from {event['source']} with type "
         f"{event['type']} and specversion {event['specversion']}, size {event['size']}"
-        f" and data {data.shape}"
     )
 
+    # if event['type'] == "encoded logs":
 
-    # loss, anomaly = anomaly_detector.detect(data)
-    # anomaly_detector.train_step(data)
+    #     print(f"data shape {data.shape}")
+        # loss, anomaly = anomaly_detector.detect(data)
+        # anomaly_detector.train_step(data)
 
-    # print(loss,anomaly)
+        # print(loss,anomaly)
 
     return "", 204
 
