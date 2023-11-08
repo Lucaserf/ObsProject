@@ -276,3 +276,31 @@ class AnomalyDetector():
 
     
 
+    #a class that calculates the mean and variance of a series of numbers loaded one at the time
+
+class OnlineStats():
+    def __init__(self):
+        self.mean = 0
+        self.variance = 0
+        self.n = 0
+        self.max = -np.inf
+
+    def update(self,x):
+        self.n += 1
+        delta = x - self.mean
+        self.mean += delta/self.n
+        delta2 = x - self.mean
+        self.variance += delta*delta2
+        self.max = max(self.max,x)
+
+    def get_mean(self):
+        return self.mean
+
+    def get_variance(self):
+        return self.variance/(self.n-1)
+
+    def get_std(self):
+        return np.sqrt(self.get_variance())
+    
+    def get_max(self):
+        return self.max

@@ -30,29 +30,38 @@ epochs=64
 chkpt = "docker_agent_logger/app/classifier/"
 
 raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
-    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
-    .batch(32)
+    tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
+    .batch(1)
     .shuffle(buffer_size=256)
 )
 
-vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
-            raw_ds,
-            vocabulary_size=vocab_size,
-            reserved_tokens=["[PAD]", "[UNK]","[SEP]","[BOS]","[EOS]"],
-        )
+# vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
+#             raw_ds,
+#             vocabulary_size=vocab_size,
+#             reserved_tokens=["[PAD]", "[UNK]","[SEP]","[BOS]","[EOS]"],
+#         )
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
-    pickle.dump(vocab,f)
+# with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
+#     pickle.dump(vocab,f)
 
-# with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
-#     vocab = pickle.load(f)
+with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
+    vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
 
-ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+ds = raw_ds.map(tokenizer.tokenizer, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
+
+#get max length of sequences in ds
+stats = OnlineStats()
+for i in ds:
+    stats.update(len(i.to_list()[0]))
+
+print("max len:",stats.get_max())
+print("mean len:",stats.get_mean())
+print("std len:",stats.get_std())
 
 # val_split = 0.2
 # ds_size = ds.cardinality().numpy()
@@ -65,9 +74,9 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 
 
 
-model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
+# model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
 
-model.vae.load_model(chkpt=chkpt+str(31))
+# model.vae.load_model(chkpt=chkpt+str(31))
  
 # model.train_model(ds,epochs=epochs,chkpt=chkpt+"test2")
 
@@ -85,13 +94,13 @@ model.vae.load_model(chkpt=chkpt+str(31))
 
 # plot_label_clusters(model.vae, ds)
 
-z = tf.random.normal(shape=(1, 256))
+# z = tf.random.normal(shape=(1, 256))
 # encode_token = ds.take(1).as_numpy_iterator().next()
 
 # print(tokenizer.decode(encode_token))
 
-tokens = model.vae.decode(z)
+# tokens = model.vae.decode(z)
 
-print(tokenizer.decode(tokens))
+# print(tokenizer.decode(tokens))
 
 
