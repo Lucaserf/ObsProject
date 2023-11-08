@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import bz2
 import sys
+import tensorflow as tf
 from AI import Tokenizer,Model
 
 
@@ -21,20 +22,28 @@ try:
 except:
     pass
 
+def compress_and_send(data,type,repetitions):
+
+            compressed_data = bz2.compress(pickle.dumps(data))
+            print(f"lenght of {type}: ", sys.getsizeof(compressed_data))
+
+            headers, _ = to_binary(CloudEvent({
+                "type": type,
+                "source": "simulation",
+                "size": str(sys.getsizeof(compressed_data)),
+            }, {"data": []}))
+
+            times = []
+            for _ in range(repetitions):
+                t=time.time()
+                r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+                times.append(time.time()-t)
+            print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
-vocab_size = 5000
-max_len=256
-
-
-# vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
-#             raw_ds,
-#             vocabulary_size=vocab_size,
-#             reserved_tokens=["[PAD]", "[UNK]", "[BOS]","[EOS]"],
-#         )
-
-# with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
-#     pickle.dump(vocab,f)
+vocab_size = 4000
+moltiplicatore = 4
+max_len=150*moltiplicatore # mean length + std length
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
@@ -62,13 +71,11 @@ while True:
             data_path = os.path.join(log_folder,d)
 
             with open(data_path) as f:
-                logs = f.read().split("\n")[:-1]
+                logs = f.read().split("\n")[:-1][0]*moltiplicatore
 
-            new_logs += logs
+            new_logs.append(logs)
 
             os.remove(data_path)
-
-
 
         #first step of preprocessing
         parsed_logs = tokenizer.parsing(new_logs)
@@ -76,57 +83,22 @@ while True:
         #second step of preprocessing
         vectorized_logs = tokenizer.vectorization(parsed_logs)
 
+        print(tf.size(vectorized_logs.numpy()))
+        print(f"size of vectorized data: {tf.size(vectorized_logs.numpy()) * vectorized_logs.dtype.size}")
+
         #third step of preprocessing
         enbedded_logs = model.vae.encode(vectorized_logs)
 
-        new_logs_prep = enbedded_logs
-        
+        print(f"size of enbedded data: {tf.size(enbedded_logs.numpy()) * enbedded_logs.dtype.size}")
 
-            
-
-        compressed_data = bz2.compress(pickle.dumps(new_logs))
-        print("lenght of compressed data: ",sys.getsizeof(compressed_data))
-        # compressed_data = compressed_data*100
-        # print("lenght of compressed data: ",sys.getsizeof(compressed_data))
-
-        headers, _ = to_binary(CloudEvent({
-            "type": "logs",
-            "source": "simulation",
-            "size": str(sys.getsizeof(compressed_data)),
-        }, {"data": []}))
-
-
-        print("sending compressed data:")
-        times = []
-        for _ in range(1):
-            t=time.time()
-            r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-            times.append(time.time()-t)
-        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
-
-
-        compressed_data = bz2.compress(pickle.dumps(new_logs_prep))
-        print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
-        # compressed_data = compressed_data*100
-        # print("lenght of encoded compressed data: ",str(sys.getsizeof(compressed_data)))
-
-        headers, _ = to_binary(CloudEvent({
-            "type": "encoded logs",
-            "source": "simulation",
-            "size": str(sys.getsizeof(compressed_data)),
-        }, {"data": []}))
-
-        print("sending compressed encoded data:")
-        times = []
-        for _ in range(1):
-            t=time.time()
-            r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-            times.append(time.time()-t)
-        print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
-
+        compress_and_send(parsed_logs,"logs",10)
+        compress_and_send(vectorized_logs,"vectorized logs",10)
+        compress_and_send(enbedded_logs,"encoded logs",10)
 
         #training step
         metrics = model.vae.train_step(vectorized_logs)
         print(metrics)
+
+        time.sleep(100)
             
 

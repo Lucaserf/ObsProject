@@ -15,3 +15,4 @@ docker push lucaserf/obs:sim_log
 kubectl rollout restart deployment/cloudevents-gen-deployment
 
 # kubectl apply -f ./docker_app/app/deploy/cloudevents-deploy.yaml
+# kubectl delete -f ./docker_app/app/deploy/cloudevents-deploy.yaml
