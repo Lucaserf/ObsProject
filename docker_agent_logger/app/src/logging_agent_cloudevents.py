@@ -22,15 +22,15 @@ try:
 except:
     pass
 
-def compress_and_send(data,type,repetitions):
+def compress_and_send(data,type_log,repetitions):
 
             compressed_data = bz2.compress(pickle.dumps(data))
-            print(f"lenght of {type}: ", sys.getsizeof(compressed_data))
-            if type == "encoded logs":
-                metrics["encoding_dimension"].append(sys.getsizeof(compressed_data))
+            print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
+            
+            metrics[type_log].append(sys.getsizeof(compressed_data))
 
             headers, _ = to_binary(CloudEvent({
-                "type": type,
+                "type": type_log,
                 "source": "simulation",
                 "size": str(sys.getsizeof(compressed_data)),
             }, {"data": []}))
@@ -56,7 +56,7 @@ model = Model(vocab_size = vocab_size,latent_dim=max_len//3,embedding_dim=128,ma
 i = 0
 save_iterations = 20
 
-metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"encoding_dimension":[]}
+metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[]}
 
 while True:
     
@@ -65,8 +65,6 @@ while True:
 
     data = [x for x in data if "HDFS" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
-    with open(permanent_folder+"metrics.pkl","wb") as f:
-        pickle.dump(metrics,f)
 
     #log rotation and aggregation
     if len(data)>= 64:
@@ -98,18 +96,20 @@ while True:
         print(f"size of enbedded data: {tf.size(enbedded_logs.numpy()) * enbedded_logs.dtype.size}")
 
         compress_and_send(parsed_logs,"logs",1)
-        compress_and_send(vectorized_logs,"vectorized logs",1)
-        compress_and_send(enbedded_logs,"encoded logs",1)
+        compress_and_send(vectorized_logs,"vectorized_logs",1)
+        compress_and_send(enbedded_logs,"encoded_logs",1)
 
         #training step
         losses = model.vae.train_step(vectorized_logs)
         print(losses)
-        metrics["total_loss"].append(losses["total_loss"])
-        metrics["reconstruction_loss"].append(losses["reconstruction_loss"])
-        metrics["kl_loss"].append(losses["kl_loss"])
+        metrics["total_loss"].append(losses["total_loss"].numpy())
+        metrics["reconstruction_loss"].append(losses["reconstruction_loss"].numpy())
+        metrics["kl_loss"].append(losses["kl_loss"].numpy())
 
         if i%save_iterations == 0:
             model.vae.save_model(permanent_folder+"/logs_model/")
+            with open(permanent_folder+"metrics.pkl","wb") as f:
+                pickle.dump(metrics,f)
 
             
 
