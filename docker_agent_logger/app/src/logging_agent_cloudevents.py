@@ -26,6 +26,8 @@ def compress_and_send(data,type,repetitions):
 
             compressed_data = bz2.compress(pickle.dumps(data))
             print(f"lenght of {type}: ", sys.getsizeof(compressed_data))
+            if type == "encoded logs":
+                metrics["encoding_dimension"].append(sys.getsizeof(compressed_data))
 
             headers, _ = to_binary(CloudEvent({
                 "type": type,
@@ -42,16 +44,19 @@ def compress_and_send(data,type,repetitions):
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
 vocab_size = 4000
-moltiplicatore = 4
+moltiplicatore = 1
 max_len=150*moltiplicatore # mean length + std length
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
-model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
+model = Model(vocab_size = vocab_size,latent_dim=max_len//3,embedding_dim=128,max_len = max_len)
 
 i = 0
+save_iterations = 20
+
+metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"encoding_dimension":[]}
 
 while True:
     
@@ -60,11 +65,12 @@ while True:
 
     data = [x for x in data if "HDFS" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
-    time.sleep(0.01)
+    with open(permanent_folder+"metrics.pkl","wb") as f:
+        pickle.dump(metrics,f)
 
     #log rotation and aggregation
     if len(data)>= 64:
-
+        i += 1
         new_logs = []
 
         for d in data[:64]:
@@ -82,8 +88,8 @@ while True:
 
         #second step of preprocessing
         vectorized_logs = tokenizer.vectorization(parsed_logs)
-
-        print(tf.size(vectorized_logs.numpy()))
+        # print(vectorized_logs.numpy().shape)
+        # print(tf.size(vectorized_logs.numpy()))
         print(f"size of vectorized data: {tf.size(vectorized_logs.numpy()) * vectorized_logs.dtype.size}")
 
         #third step of preprocessing
@@ -91,14 +97,19 @@ while True:
 
         print(f"size of enbedded data: {tf.size(enbedded_logs.numpy()) * enbedded_logs.dtype.size}")
 
-        compress_and_send(parsed_logs,"logs",10)
-        compress_and_send(vectorized_logs,"vectorized logs",10)
-        compress_and_send(enbedded_logs,"encoded logs",10)
+        compress_and_send(parsed_logs,"logs",1)
+        compress_and_send(vectorized_logs,"vectorized logs",1)
+        compress_and_send(enbedded_logs,"encoded logs",1)
 
         #training step
-        metrics = model.vae.train_step(vectorized_logs)
-        print(metrics)
+        losses = model.vae.train_step(vectorized_logs)
+        print(losses)
+        metrics["total_loss"].append(losses["total_loss"])
+        metrics["reconstruction_loss"].append(losses["reconstruction_loss"])
+        metrics["kl_loss"].append(losses["kl_loss"])
 
-        time.sleep(100)
+        if i%save_iterations == 0:
+            model.vae.save_model(permanent_folder+"/logs_model/")
+
             
 

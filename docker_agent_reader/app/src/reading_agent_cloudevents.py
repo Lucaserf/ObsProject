@@ -22,8 +22,6 @@ def home():
     
     data = pickle.loads(bz2.decompress(event.get_data()))
     
-
-
     print(
         f"Found {event['id']} from {event['source']} with type "
         f"{event['type']} and specversion {event['specversion']}, size {event['size']}"
