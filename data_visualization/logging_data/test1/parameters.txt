@@ -1,0 +1,7 @@
+data: HDFS_01
+
+vocab_size = 4000
+moltiplicatore = 1
+max_len=150*moltiplicatore 
+
+latent_dim = max_len//3

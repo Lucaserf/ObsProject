@@ -196,7 +196,7 @@ class VAE(tf.keras.Model):
         z_mean, z_log_var,z = self.encoder(data)
         return tf.cast(z,tf.int32)
     def decode(self,z):
-        z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim))
+        z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
         logits = self.decoder(z)
         # reconstruction = tf.argmax(logits,axis=-1)
         reconstruction = tf.random.categorical(logits=tf.squeeze(logits,axis=0),num_samples=1)
