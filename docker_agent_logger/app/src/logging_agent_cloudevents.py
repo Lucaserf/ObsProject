@@ -45,18 +45,19 @@ def compress_and_send(data,type_log,repetitions):
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
 vocab_size = 4000
 moltiplicatore = 1
-max_len=150*moltiplicatore # mean length + std length
+max_len=120*moltiplicatore # mean length + std length
+latent_dim=max_len//3
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
-model = Model(vocab_size = vocab_size,latent_dim=max_len//3,embedding_dim=128,max_len = max_len)
+model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
 
 i = 0
 save_iterations = 20
 
-metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[]}
+metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[],"mean_padding":[]}
 
 while True:
     
@@ -86,6 +87,7 @@ while True:
 
         #second step of preprocessing
         vectorized_logs = tokenizer.vectorization(parsed_logs)
+        metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())
         # print(vectorized_logs.numpy().shape)
         # print(tf.size(vectorized_logs.numpy()))
         print(f"size of vectorized data: {tf.size(vectorized_logs.numpy()) * vectorized_logs.dtype.size}")
