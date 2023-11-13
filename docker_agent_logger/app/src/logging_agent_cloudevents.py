@@ -45,7 +45,7 @@ def compress_and_send(data,type_log,repetitions):
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
 vocab_size = 4000
 moltiplicatore = 1
-max_len=120*moltiplicatore # mean length + std length
+max_len=60*moltiplicatore # mean length + std length
 latent_dim=max_len//3
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:

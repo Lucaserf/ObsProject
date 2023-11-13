@@ -132,7 +132,7 @@ class Sampling(tf.keras.layers.Layer):
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
         epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
-        return tf.round(z_mean + tf.exp(0.5 * z_log_var) * epsilon)
+        return tf.round((z_mean + tf.exp(0.5 * z_log_var) * epsilon)*10**2) #2 cifre decimali
 
 
 
