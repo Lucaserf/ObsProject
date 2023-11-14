@@ -25,14 +25,16 @@ import matplotlib.pyplot as plt
 
 
 vocab_size = 4000
-max_len=256
+max_len=60
 epochs=64
+MAX_TRAINING_SEQ_LEN = 3000
 chkpt = "docker_agent_logger/app/classifier/"
 
-raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
+raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
-    .batch(1)
-    .shuffle(buffer_size=256)
+    .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
+    .batch(128)
+    .shuffle(buffer_size=516)
 )
 
 # vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
@@ -50,18 +52,18 @@ with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
 
-ds = raw_ds.map(tokenizer.tokenizer, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
 
 #get max length of sequences in ds
-stats = OnlineStats()
-for i in ds:
-    stats.update(len(i.to_list()[0]))
+# stats = OnlineStats()
+# for i in ds:
+#     stats.update(len(i.to_list()[0]))
 
-print("max len:",stats.get_max())
-print("mean len:",stats.get_mean())
-print("std len:",stats.get_std())
+# print("max len:",stats.get_max())
+# print("mean len:",stats.get_mean())
+# print("std len:",stats.get_std())
 
 # val_split = 0.2
 # ds_size = ds.cardinality().numpy()
@@ -74,11 +76,11 @@ print("std len:",stats.get_std())
 
 
 
-# model = Model(vocab_size = vocab_size,latent_dim=256,embedding_dim=128,max_len = max_len)
+model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,max_len = max_len)
 
-# model.vae.load_model(chkpt=chkpt+str(31))
+model.vae.load_model(chkpt=chkpt+"test35")
  
-# model.train_model(ds,epochs=epochs,chkpt=chkpt+"test2")
+model.train_model(ds,epochs=epochs,chkpt=chkpt+"test35")
 
 
 
