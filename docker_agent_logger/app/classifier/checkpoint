@@ -1,2 +1,2 @@
-model_checkpoint_path: "test3514decoder"
-all_model_checkpoint_paths: "test3514decoder"
+model_checkpoint_path: "test3516decoder"
+all_model_checkpoint_paths: "test3516decoder"
