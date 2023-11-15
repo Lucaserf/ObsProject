@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 vocab_size = 4000
 max_len=60
-epochs=64
+epochs=32
 MAX_TRAINING_SEQ_LEN = 3000
 chkpt = "docker_agent_logger/app/classifier/"
 
@@ -34,7 +34,7 @@ raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
     .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
     .batch(128)
-    .shuffle(buffer_size=516)
+    .shuffle(buffer_size=100000)
 )
 
 # vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
@@ -78,9 +78,9 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 
 model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,max_len = max_len)
 
-model.vae.load_model(chkpt=chkpt+"test35")
+# model.vae.load_model(chkpt=chkpt)
  
-model.train_model(ds,epochs=epochs,chkpt=chkpt+"test35")
+model.train_model(ds,epochs=epochs,chkpt=chkpt)
 
 
 
