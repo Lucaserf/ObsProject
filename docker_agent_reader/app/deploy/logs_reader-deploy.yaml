@@ -21,6 +21,13 @@ spec:
         name: dataread
         ports:   
         - containerPort: 3000
+        volumeMounts:
+          - name: pvlog
+            mountPath: /var/log/pv
+      volumes:
+      - name: pvlog
+        persistentVolumeClaim:
+         claimName: myapp-log-pvc
 
 ---
 apiVersion: v1

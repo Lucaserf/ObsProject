@@ -3,12 +3,32 @@ import bz2
 from cloudevents.http import from_http
 import pickle
 import sys
-from AI import AnomalyDetector
+import os
+from AI import *
+import time
+
+permanent_folder = "var/log/pv/logging_data/"
+saving_data_interation = 20
+try:
+    os.mkdir(permanent_folder)
+except:
+    pass
 
 
-latent_space_dim = 256
-threshold = 10
-anomaly_detector = AnomalyDetector(latent_space_dim,threshold)
+vocab_size = 4000
+moltiplicatore = 1
+max_len=60*moltiplicatore # mean length + std length
+latent_dim=max_len//3
+threshold = 250
+with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
+    vocab = pickle.load(f)
+
+tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
+model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
+model.vae.load_model(chkpt="trained_classifier/")
+
+times = {}
+
 app = Flask(__name__)
 
 # create an endpoint at http://localhost:/3000/
@@ -17,26 +37,51 @@ def home():
     # create a CloudEvent
     event = from_http(request.headers, request.get_data())
 
-
     # you can access cloudevent fields as seen below
     
     data = pickle.loads(bz2.decompress(event.get_data()))
+
+
+    if event["type"] == "anomaly":
+        times[event["id"]] = time.time() - event["log_time"]
+        print(f"anomaly detected in {event['id']}")
+
+    elif event["type"] == "logs":
+        parsed_logs = tokenizer.parsing(data)
+        vectorized_logs = tokenizer.vectorization(parsed_logs)
+        losses = model.vae.train_step(vectorized_logs,train=False)
+        if losses["reconstruction_loss"].numpy() > threshold:
+            times[event["id"]] = time.time() - event["log_time"]
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
+        
+    elif event["type"] == "parsed logs":
+        vectorized_logs = tokenizer.vectorization(data)
+        losses = model.vae.train_step(vectorized_logs,train=False)
+        if losses["reconstruction_loss"].numpy() > threshold:
+            times[event["id"]] = time.time() - event["log_time"]
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
+
+    elif event["type"] == "vectorized logs":
+        losses = model.vae.train_step(data,train=False)
+        if losses["reconstruction_loss"].numpy() > threshold:
+            times[event["id"]] = time.time() - event["log_time"]
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
+
+    else:
+        print("error")
+
     
-    print(
-        f"Found {event['id']} from {event['source']} with type "
-        f"{event['type']} and specversion {event['specversion']}, size {event['size']}"
-    )
-
-    # if event['type'] == "encoded logs":
-
-    #     print(f"data shape {data.shape}")
-        # loss, anomaly = anomaly_detector.detect(data)
-        # anomaly_detector.train_step(data)
-
-        # print(loss,anomaly)
-
+    if len(times) % saving_data_interation == 0:
+        save_times()
+    
     return "", 204
-
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0",port=3000)
+
+
+
+
+def save_times():
+    with open(permanent_folder+"times.pkl","wb") as f:
+        pickle.dump(times,f)

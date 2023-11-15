@@ -1,4 +1,5 @@
 pandas
 cloudevents
 flask
-tensorflow
+tensorflow==2.14.0
+keras-nlp

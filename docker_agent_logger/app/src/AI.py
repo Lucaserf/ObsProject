@@ -155,7 +155,7 @@ class VAE(tf.keras.Model):
             self.reconstruction_loss_tracker,
             self.kl_loss_tracker
         ]
-    def train_step(self,data):
+    def train_step(self,data,train=True):
         with tf.GradientTape() as tape:
             z_mean, z_log_var,z = self.encoder(data)
             z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim))
@@ -168,8 +168,9 @@ class VAE(tf.keras.Model):
             kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
             kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
-        grads = tape.gradient(total_loss, self.trainable_weights)
-        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        if train:
+            grads = tape.gradient(total_loss, self.trainable_weights)
+            self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)

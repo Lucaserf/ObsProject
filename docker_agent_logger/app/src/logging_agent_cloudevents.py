@@ -22,17 +22,18 @@ try:
 except:
     pass
 
-def compress_and_send(data,type_log,repetitions):
-
+def compress_and_send(data,type_log,repetitions,i):
+            
             compressed_data = bz2.compress(pickle.dumps(data))
             print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
             
             metrics[type_log].append(sys.getsizeof(compressed_data))
 
             headers, _ = to_binary(CloudEvent({
+                "id": str(i),
                 "type": type_log,
                 "source": "simulation",
-                "size": str(sys.getsizeof(compressed_data)),
+                "log_time": str(sys.getsizeof(compressed_data)),
             }, {"data": []}))
 
             times = []
@@ -47,6 +48,7 @@ vocab_size = 4000
 moltiplicatore = 1
 max_len=60*moltiplicatore # mean length + std length
 latent_dim=max_len//3
+threshold = 250
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
@@ -57,7 +59,7 @@ model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,ma
 i = 0
 save_iterations = 20
 
-metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[],"mean_padding":[]}
+metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"parsed_logs":[],"vectorized_logs":[],"encoded_logs":[],"mean_padding":[],"anomaly":[]}
 
 while True:
     
@@ -68,11 +70,11 @@ while True:
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
     #log rotation and aggregation
-    if len(data)>= 64:
+    if len(data)>= 1:
         i += 1
         new_logs = []
 
-        for d in data[:64]:
+        for d in data[:1]:
             data_path = os.path.join(log_folder,d)
 
             with open(data_path) as f:
@@ -82,36 +84,49 @@ while True:
 
             os.remove(data_path)
 
+        log_catch_time = time.time()
+
         #first step of preprocessing
         parsed_logs = tokenizer.parsing(new_logs)
 
+        time_after_parse = time.time()
+
         #second step of preprocessing
         vectorized_logs = tokenizer.vectorization(parsed_logs)
-        metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())
-        # print(vectorized_logs.numpy().shape)
-        # print(tf.size(vectorized_logs.numpy()))
-        print(f"size of vectorized data: {tf.size(vectorized_logs.numpy()) * vectorized_logs.dtype.size}")
 
-        #third step of preprocessing
-        enbedded_logs = model.vae.encode(vectorized_logs)
+        time_after_vectorization = time.time()
 
-        print(f"size of enbedded data: {tf.size(enbedded_logs.numpy()) * enbedded_logs.dtype.size}")
+        losses = model.vae.train_step(vectorized_logs,train=False)
 
-        compress_and_send(parsed_logs,"logs",1)
-        compress_and_send(vectorized_logs,"vectorized_logs",1)
-        compress_and_send(enbedded_logs,"encoded_logs",1)
+        
+        anomaly = False
+        if losses["reconstruction_loss"].numpy() > threshold:
+            anomaly = True
 
+        time_after_detection = time.time()
+
+        compress_and_send(new_logs,"logs",1,time.time())
+        compress_and_send(parsed_logs,"parsed_logs",1,time.time()-(time_after_parse-log_catch_time))
+        compress_and_send(vectorized_logs,"vectorized_logs",1,time.time()-(time_after_vectorization-log_catch_time))
+        compress_and_send(anomaly,"anomaly",1,time.time()-(time_after_detection-log_catch_time))
+        
         #training step
-        losses = model.vae.train_step(vectorized_logs)
-        print(losses)
+
+        metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())
         metrics["total_loss"].append(losses["total_loss"].numpy())
         metrics["reconstruction_loss"].append(losses["reconstruction_loss"].numpy())
         metrics["kl_loss"].append(losses["kl_loss"].numpy())
 
-        if i%save_iterations == 0:
-            model.vae.save_model(permanent_folder+"/logs_model/")
-            with open(permanent_folder+"metrics.pkl","wb") as f:
-                pickle.dump(metrics,f)
+        #saving model after a number of iterations
+        # if i%save_iterations == 0:
+        #     model.vae.save_model(permanent_folder+"/logs_model/")
+        #     with open(permanent_folder+"metrics.pkl","wb") as f:
+        #         pickle.dump(metrics,f)
+
+        
+
+
+        
 
             
 
