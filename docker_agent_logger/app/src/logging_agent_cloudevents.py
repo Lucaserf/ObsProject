@@ -22,7 +22,7 @@ try:
 except:
     pass
 
-def compress_and_send(data,type_log,repetitions,i):
+def compress_and_send(data,type_log,repetitions,i,catching_time):
             
             compressed_data = bz2.compress(pickle.dumps(data))
             print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
@@ -33,7 +33,7 @@ def compress_and_send(data,type_log,repetitions,i):
                 "id": str(i),
                 "type": type_log,
                 "source": "simulation",
-                "log_time": str(sys.getsizeof(compressed_data)),
+                "time": str(catching_time),
             }, {"data": []}))
 
             times = []
@@ -47,7 +47,7 @@ def compress_and_send(data,type_log,repetitions,i):
 vocab_size = 4000
 moltiplicatore = 1
 max_len=60*moltiplicatore # mean length + std length
-latent_dim=max_len//3
+latent_dim=max_len//2
 threshold = 250
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
@@ -55,6 +55,7 @@ with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
+model.vae.load_model(chkpt="./app/trained_classifier/")
 
 i = 0
 save_iterations = 20
@@ -105,10 +106,10 @@ while True:
 
         time_after_detection = time.time()
 
-        compress_and_send(new_logs,"logs",1,time.time())
-        compress_and_send(parsed_logs,"parsed_logs",1,time.time()-(time_after_parse-log_catch_time))
-        compress_and_send(vectorized_logs,"vectorized_logs",1,time.time()-(time_after_vectorization-log_catch_time))
-        compress_and_send(anomaly,"anomaly",1,time.time()-(time_after_detection-log_catch_time))
+        compress_and_send(new_logs,"logs",1,i,time.time())
+        compress_and_send(parsed_logs,"parsed_logs",1,i,time.time()-(time_after_parse-log_catch_time))
+        compress_and_send(vectorized_logs,"vectorized_logs",1,i,time.time()-(time_after_vectorization-log_catch_time))
+        compress_and_send(anomaly,"anomaly",1,i,time.time()-(time_after_detection-log_catch_time))
         
         #training step
 
