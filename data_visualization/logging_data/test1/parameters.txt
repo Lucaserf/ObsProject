@@ -1,4 +1,4 @@
-data: HDFS_01
+data: HDFS_02_01
 
 vocab_size = 4000
 moltiplicatore = 1
