@@ -34,8 +34,11 @@ raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
     .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
     .batch(128)
-    .shuffle(buffer_size=100000)
+    # .shuffle(buffer_size=100000)
 )
+
+#raw_ds length
+
 
 # vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
 #             raw_ds,
@@ -65,14 +68,14 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 # print("mean len:",stats.get_mean())
 # print("std len:",stats.get_std())
 
-# val_split = 0.2
-# ds_size = ds.cardinality().numpy()
+val_split = 0.2
+ds_size = 2614800
 
-# train_size = int((1-val_split) * ds_size)
-# val_size = int(val_split * ds_size)
+train_size = int((1-val_split) * ds_size)
+val_size = int(val_split * ds_size)
 
-# train_ds = ds.take(train_size)
-# val_ds = ds.skip(train_size).take(val_size)
+train_ds = ds.take(train_size).shuffle(buffer_size=2614800)
+val_ds = ds.skip(train_size).take(val_size)
 
 
 
@@ -80,7 +83,7 @@ model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,ma
 
 # model.vae.load_model(chkpt=chkpt)
  
-model.train_model(ds,epochs=epochs,chkpt=chkpt)
+model.train_model(train_ds,epochs=epochs,chkpt=chkpt)
 
 
 
