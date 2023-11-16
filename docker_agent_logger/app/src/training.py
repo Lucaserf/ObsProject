@@ -37,9 +37,6 @@ raw_ds = ( #
     # .shuffle(buffer_size=100000)
 )
 
-#raw_ds length
-
-
 # vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
 #             raw_ds,
 #             vocabulary_size=vocab_size,
@@ -74,7 +71,7 @@ ds_size = 2614800
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)
 
-train_ds = ds.take(train_size).shuffle(buffer_size=2614800)
+train_ds = ds.take(train_size).shuffle(buffer_size=train_size)
 val_ds = ds.skip(train_size).take(val_size)
 
 
