@@ -27,7 +27,7 @@ class AnomalyDetector():
             y_true = self.fixed_model(data)
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
-                    tf.keras.losses.mean_squared_error(y_true, y_pred), axis=(1)
+                    tf.keras.losses.mean_squared_error(y_true, y_pred)
                 )
             )
         grads = tape.gradient(reconstruction_loss, self.trainable_model.trainable_weights)
@@ -43,7 +43,7 @@ class AnomalyDetector():
         y_true = self.fixed_model(data)
         reconstruction_loss = tf.reduce_mean(
             tf.reduce_sum(
-                tf.keras.losses.mean_squared_error(y_true, y_pred), axis=(1)
+                tf.keras.losses.mean_squared_error(y_true, y_pred)
             )
         )
         if reconstruction_loss>self.threshold:
