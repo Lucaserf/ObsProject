@@ -28,7 +28,7 @@ vocab_size = 4000
 max_len=60
 epochs=32
 MAX_TRAINING_SEQ_LEN = 3000
-chkpt = "docker_agent_logger/app/classifier/sequence"
+chkpt = "docker_agent_logger/app/classifier/3float"
 
 raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")

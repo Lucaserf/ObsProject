@@ -132,7 +132,7 @@ class Sampling(tf.keras.layers.Layer):
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
         epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
-        return tf.round((z_mean + tf.exp(0.5 * z_log_var) * epsilon)*10**2) #2 cifre decimali
+        return tf.round((z_mean + tf.exp(0.5 * z_log_var) * epsilon)*10**3)/10**3 #3 cifre decimali
 
 
 
@@ -195,7 +195,7 @@ class VAE(tf.keras.Model):
 
     def encode(self,data):
         z_mean, z_log_var,z = self.encoder(data)
-        return tf.cast(z,tf.int32)
+        return z
     def decode(self,z):
         z = tf.expand_dims(z,axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
         logits = self.decoder(z)
