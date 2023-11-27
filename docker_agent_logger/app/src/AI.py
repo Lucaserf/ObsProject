@@ -56,8 +56,8 @@ class Model:
             num_heads=4, intermediate_dim=latent_dim, name="encoding"
         )(input_embedding)
 
-        z_mean = tf.keras.layers.Dense(latent_dim, name="z_mean")(encoding)#(encoding[:, 0, :])
-        z_log_var = tf.keras.layers.Dense(latent_dim, name="z_log_var")(encoding)#(encoding[:, 0, :])
+        z_mean = tf.keras.layers.Dense(latent_dim, name="z_mean")(encoding[:, 0, :])
+        z_log_var = tf.keras.layers.Dense(latent_dim, name="z_log_var")(encoding[:, 0, :])
 
         z = Sampling(name="z")([z_mean, z_log_var])
 
@@ -133,8 +133,8 @@ class Sampling(tf.keras.layers.Layer):
         z_mean, z_log_var = inputs
         shape = tf.shape(z_mean)
         epsilon = tf.keras.backend.random_normal(shape=shape)
-        # return tf.round((z_mean + tf.exp(0.5 * z_log_var) * epsilon)*10**2) #2 cifre decimali
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+        return tf.cast(tf.round((z_mean + tf.exp(0.5 * z_log_var) * epsilon)*10**2),tf.int32) #3 cifre decimali
+        # return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
 class VAE(tf.keras.Model):
@@ -162,7 +162,7 @@ class VAE(tf.keras.Model):
     def train_step(self, data, train=True):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
-            # z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim))
+            z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
             reconstruction = self.decoder(z)
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
@@ -189,7 +189,7 @@ class VAE(tf.keras.Model):
 
     def call(self, data):
         z_mean, z_log_var, z = self.encoder(data)
-        # z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim))
+        z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
         reconstruction = self.decoder(z)
         return reconstruction
 

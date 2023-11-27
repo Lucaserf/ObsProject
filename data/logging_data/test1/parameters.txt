@@ -1,0 +1,13 @@
+data: HDFS_02_01
+
+vocab_size = 4000
+moltiplicatore = 1
+max_len=150*moltiplicatore 
+
+latent_dim = max_len//3
+
+-rounded sampled Z
+
+kl_loss decreases also the Z size since it regularizes the latent space to become a normal distribution,
+with the rounded sampling we can have a more sparse latent space, and we can use a smaller latent space,
+but numbers will be 0 or 1.
