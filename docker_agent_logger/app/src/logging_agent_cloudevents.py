@@ -107,9 +107,9 @@ while True:
         time_after_detection = time.time()
 
         compress_and_send(new_logs,"logs",1,i,time.time())
-        compress_and_send(parsed_logs,"parsed_logs",1,i,time.time()-(time_after_parse-log_catch_time))
-        compress_and_send(vectorized_logs,"vectorized_logs",1,i,time.time()-(time_after_vectorization-log_catch_time))
-        compress_and_send(anomaly,"anomaly",1,i,time.time()-(time_after_detection-log_catch_time))
+        # compress_and_send(parsed_logs,"parsed_logs",1,i,time.time()-(time_after_parse-log_catch_time))
+        # compress_and_send(vectorized_logs,"vectorized_logs",1,i,time.time()-(time_after_vectorization-log_catch_time))
+        # compress_and_send(anomaly,"anomaly",1,i,time.time()-(time_after_detection-log_catch_time))
         
         #training step
 

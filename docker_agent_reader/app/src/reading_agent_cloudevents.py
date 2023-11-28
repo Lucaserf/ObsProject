@@ -8,7 +8,7 @@ from AI import *
 import time
 
 permanent_folder = "var/log/pv/logging_data/"
-saving_data_interation = 20
+saving_data_interation = 50
 try:
     os.mkdir(permanent_folder)
 except:
@@ -55,22 +55,19 @@ def home():
         vectorized_logs = tokenizer.vectorization(parsed_logs)
         losses = model.vae.train_step(vectorized_logs,train=False)
         if losses["reconstruction_loss"].numpy() > threshold:
-            times[event["id"]] = time.time() - float(event["time"])
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-        
+        times[event["id"]] = time.time() - float(event["time"])
     elif event["type"] == "parsed_logs":
         vectorized_logs = tokenizer.vectorization(data)
         losses = model.vae.train_step(vectorized_logs,train=False)
         if losses["reconstruction_loss"].numpy() > threshold:
-            times[event["id"]] = time.time() - float(event["time"])
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-
+        times[event["id"]] = time.time() - float(event["time"])
     elif event["type"] == "vectorized_logs":
         losses = model.vae.train_step(data,train=False)
         if losses["reconstruction_loss"].numpy() > threshold:
-            times[event["id"]] = time.time() - float(event["time"])
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-
+        times[event["id"]] = time.time() - float(event["time"])
     else:
         print("error")
 
