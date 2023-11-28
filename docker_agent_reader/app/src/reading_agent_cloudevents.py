@@ -28,7 +28,7 @@ with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
-model.vae.load_model(chkpt="./app/trained_classifier/17")
+model.vae.load_model(chkpt="./app/trained_classifier/3float31")
 
 times = {}
 
@@ -40,9 +40,6 @@ def home():
     # create a CloudEvent
     event = from_http(request.headers, request.get_data())
 
-
-    # you can access cloudevent fields as seen below
-    
     data = pickle.loads(bz2.decompress(event.get_data()))
 
     id = int(event["id"])
@@ -58,24 +55,6 @@ def home():
         vectorized_logs = tokenizer.vectorization(parsed_logs)
         losses = model.vae.train_step(vectorized_logs,train=False)
         if losses["reconstruction_loss"].numpy() > threshold:
-<<<<<<< HEAD
-            times[(id,e_type)] = time.time() - float(event["time"])
-            print(f"anomaly detected in {id} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-        
-    elif e_type == "parsed_logs":
-        vectorized_logs = tokenizer.vectorization(data)
-        losses = model.vae.train_step(vectorized_logs,train=False)
-        if losses["reconstruction_loss"].numpy() > threshold:
-            times[(id,e_type)] = time.time() - float(event["time"])
-            print(f"anomaly detected in {id} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-
-    elif e_type == "vectorized_logs":
-        losses = model.vae.train_step(data,train=False)
-        if losses["reconstruction_loss"].numpy() > threshold:
-            times[(id,e_type)] = time.time() - float(event["time"])
-            print(f"anomaly detected in {id} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-
-=======
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
         times[event["id"]] = time.time() - float(event["time"])
     elif event["type"] == "parsed_logs":
@@ -89,7 +68,6 @@ def home():
         if losses["reconstruction_loss"].numpy() > threshold:
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
         times[event["id"]] = time.time() - float(event["time"])
->>>>>>> a2a47585168b8de77bcd08b2abe000c57afa47e0
     else:
         print("error")
 
