@@ -48,14 +48,14 @@ vocab_size = 4000
 moltiplicatore = 1
 max_len=60*moltiplicatore # mean length + std length
 latent_dim=max_len//2
-threshold = 250
+threshold = 340
 
 with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
-model.vae.load_model(chkpt="./app/trained_classifier/")
+model.vae.load_model(chkpt="./app/trained_classifier/3float31")
 
 i = 0
 save_iterations = 20
@@ -69,6 +69,8 @@ while True:
 
     data = [x for x in data if "HDFS" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
+
+    time.sleep(0.01)
 
     #log rotation and aggregation
     if len(data)>= 1:
@@ -119,10 +121,10 @@ while True:
         metrics["kl_loss"].append(losses["kl_loss"].numpy())
 
         #saving model after a number of iterations
-        # if i%save_iterations == 0:
-        #     model.vae.save_model(permanent_folder+"/logs_model/")
-        #     with open(permanent_folder+"metrics.pkl","wb") as f:
-        #         pickle.dump(metrics,f)
+        if i%save_iterations == 0:
+            # model.vae.save_model(permanent_folder+"/logs_model/")
+            with open(permanent_folder+"metrics.pkl","wb") as f:
+                pickle.dump(metrics,f)
 
         
 
