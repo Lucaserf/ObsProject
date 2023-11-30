@@ -37,7 +37,7 @@ class AnomalyDetector():
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
         }
 
-    def detect(self,data):
+    def detect(self,data,threshold):
         anomaly = False
         y_pred = self.trainable_model(data)
         y_true = self.fixed_model(data)
@@ -46,7 +46,7 @@ class AnomalyDetector():
                 tf.keras.losses.mean_squared_error(y_true, y_pred)
             )
         )
-        if reconstruction_loss>self.threshold:
+        if reconstruction_loss>threshold:
             anomaly = True
         
         return reconstruction_loss,anomaly
