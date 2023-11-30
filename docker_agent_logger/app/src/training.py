@@ -24,14 +24,14 @@ import matplotlib.pyplot as plt
 
 
 
-vocab_size = 4000
+vocab_size = 3000
 max_len=60
 epochs=32
-MAX_TRAINING_SEQ_LEN = 3000
-chkpt = "docker_agent_logger/app/classifier/3float"
+MAX_TRAINING_SEQ_LEN = 1000
+chkpt = "docker_agent_logger/app/classifier_labeled/"
 
 raw_ds = ( #
-    tf.data.TextLineDataset("persistent_volume/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
+    tf.data.TextLineDataset("persistent_volume/data/HDFS_v1/HDFS.log")
     .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
     .batch(128)
     # .shuffle(buffer_size=100000)
@@ -46,7 +46,7 @@ raw_ds = ( #
 # with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
 #     pickle.dump(vocab,f)
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","rb") as f:
+with open("docker_agent_logger/app/logs_tokenizer/vocab_labeled.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
@@ -66,7 +66,7 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 # print("std len:",stats.get_std())
 
 val_split = 0.2
-ds_size = 2614800
+ds_size = 11175629
 
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)
