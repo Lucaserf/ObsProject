@@ -26,14 +26,14 @@ import matplotlib.pyplot as plt
 
 vocab_size = 3000
 max_len=60
-epochs=32
+epochs=16
 MAX_TRAINING_SEQ_LEN = 1000
-chkpt = "docker_agent_logger/app/classifier_labeled/"
+chkpt = "docker_agent_logger/app/classifier_bgl/"
 
 raw_ds = ( #
-    tf.data.TextLineDataset("persistent_volume/data/HDFS_v1/HDFS.log")
-    .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
+    tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
     .batch(128)
+    # .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
     # .shuffle(buffer_size=100000)
 )
 
@@ -46,13 +46,14 @@ raw_ds = ( #
 # with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
 #     pickle.dump(vocab,f)
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab_labeled.pkl","rb") as f:
+with open("docker_agent_logger/app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
     vocab = pickle.load(f)
+
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
 
-ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+ds = raw_ds.map(tokenizer.vectorization, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
 
@@ -66,7 +67,7 @@ ds = raw_ds.map(tokenizer.preprocess, num_parallel_calls=tf.data.AUTOTUNE).prefe
 # print("std len:",stats.get_std())
 
 val_split = 0.2
-ds_size = 11175629
+ds_size = 4747963
 
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)

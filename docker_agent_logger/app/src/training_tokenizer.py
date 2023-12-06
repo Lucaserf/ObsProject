@@ -6,30 +6,28 @@ import pickle
 import tensorflow as tf
 
 
-vocab_size = 4000
-max_len=256
-chkpt = "docker_agent_logger/app/classifier/"
+vocab_size = 5000
 
 raw_ds = ( #.filter(lambda x: tf.strings.length(x) > MIN_TRAINING_SEQ_LEN)
-    tf.data.TextLineDataset("docker_agent_logger/app/data/HDFS_v2/node_logs/hadoop-hdfs-datanode-mesos-01.log")
-    .batch(32)
+    tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
+    .batch(128)
     .shuffle(buffer_size=256)
 )
 
-def parsing(data):
-    data = tf.strings.regex_replace(data, r'\b[a-zA-Z\d\-_\.]{20,}\b', '*')
-    return data
+# def parsing(data):
+#     data = tf.strings.regex_replace(data, r'\b[a-zA-Z\d\-_\.]{20,}\b', '*')
+#     return data
 
 
-ds = raw_ds.map(parsing, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
-    tf.data.AUTOTUNE
-)
+# ds = raw_ds.map(parsing, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+#     tf.data.AUTOTUNE
+# )
 
 vocab = keras_nlp.tokenizers.compute_word_piece_vocabulary(
-            ds,
+            raw_ds,
             vocabulary_size=vocab_size,
-            reserved_tokens=["[PAD]", "[UNK]","[SEP]","[BOS]","[EOS]"],
+            reserved_tokens=["[PAD]", "[UNK]","[BOS]","[EOS]"],
         )
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
+with open("docker_agent_logger/app/logs_tokenizer/vocab_bgl.pkl","wb") as f:
     pickle.dump(vocab,f)
