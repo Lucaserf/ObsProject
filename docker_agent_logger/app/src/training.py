@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 
 vocab_size = 3000
-max_len=60
+max_len=85
 epochs=16
 MAX_TRAINING_SEQ_LEN = 1000
 chkpt = "docker_agent_logger/app/classifier_bgl/"
@@ -52,8 +52,23 @@ with open("docker_agent_logger/app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
+def take_out_labels(data: tf.Tensor):
+    data = data.decode("utf-8")
+    if data[0] == "-":
+        return data[2:]
+    else:
+        return data
+    
+# ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.string,tf.bool)), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+#     tf.data.AUTOTUNE
+# )
 
-ds = raw_ds.map(tokenizer.vectorization, num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+ds = raw_ds.map(lambda x: tf.numpy_function(func=take_out_labels,inp=[x],Tout=tf.string), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+    tf.data.AUTOTUNE
+)
+
+
+ds_tokenized = ds.map(lambda x: tokenizer.vectorization(x), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
 
