@@ -73,7 +73,7 @@ class Model:
                 max_len,
                 latent_dim,
             ),
-            dtype=tf.float32,
+            dtype=tf.int32,
             name="latent_space_input",
         )
         # decoder_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
@@ -90,7 +90,7 @@ class Model:
         #     name = "decoder"
         # )(decoder_embedding,latent_space_input)
         hidden_layer = tf.keras.layers.Dense(
-            latent_dim, activation="relu", name="hidden_layer"
+            (vocab_size-latent_dim)//2, activation="relu", name="hidden_layer"
         )(latent_space_input)
 
         output = tf.keras.layers.Dense(vocab_size, name="output")(hidden_layer)
@@ -162,7 +162,7 @@ class VAE(tf.keras.Model):
     def train_step(self, data, train=True):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
-            z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
+            z = tf.expand_dims(z, axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
             reconstruction = self.decoder(z)
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
@@ -189,7 +189,7 @@ class VAE(tf.keras.Model):
 
     def call(self, data):
         z_mean, z_log_var, z = self.encoder(data)
-        z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
+        z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len,self.latent_dim),dtype=tf.int32)
         reconstruction = self.decoder(z)
         return reconstruction
 

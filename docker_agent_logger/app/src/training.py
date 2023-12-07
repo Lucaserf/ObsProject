@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 
 
-vocab_size = 3000
+vocab_size = 5000
 max_len=85
 epochs=16
 MAX_TRAINING_SEQ_LEN = 1000
@@ -32,7 +32,6 @@ chkpt = "docker_agent_logger/app/classifier_bgl/"
 
 raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
-    .batch(128)
     # .filter(lambda x: tf.strings.length(x) < MAX_TRAINING_SEQ_LEN)
     # .shuffle(buffer_size=100000)
 )
@@ -52,23 +51,23 @@ with open("docker_agent_logger/app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
-def take_out_labels(data: tf.Tensor):
+def get_labels(data: tf.Tensor):
     data = data.decode("utf-8")
     if data[0] == "-":
-        return data[2:]
+        return (data[2:],False)
     else:
-        return data
+        return (data,True)
     
-# ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.string,tf.bool)), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
-#     tf.data.AUTOTUNE
-# )
-
-ds = raw_ds.map(lambda x: tf.numpy_function(func=take_out_labels,inp=[x],Tout=tf.string), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.string,tf.bool)), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
 
+# ds = raw_ds.map(lambda x: tf.numpy_function(func=take_out_labels,inp=[x],Tout=tf.string), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+#     tf.data.AUTOTUNE
+# )
 
-ds_tokenized = ds.map(lambda x: tokenizer.vectorization(x), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
+
+ds_tokenized = ds.map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE).prefetch(
     tf.data.AUTOTUNE
 )
 
@@ -87,9 +86,8 @@ ds_size = 4747963
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)
 
-train_ds = ds.take(train_size).shuffle(buffer_size=train_size)
-val_ds = ds.skip(train_size).take(val_size)
-
+train_ds = ds_tokenized.take(train_size).shuffle(buffer_size=train_size).batch(128)
+val_ds = ds_tokenized.skip(train_size).take(val_size)
 
 
 model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,max_len = max_len)
