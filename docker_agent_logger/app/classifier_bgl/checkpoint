@@ -1,2 +1,2 @@
-model_checkpoint_path: "15decoder"
-all_model_checkpoint_paths: "15decoder"
+model_checkpoint_path: "2decoder"
+all_model_checkpoint_paths: "2decoder"
