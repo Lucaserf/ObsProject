@@ -28,7 +28,7 @@ vocab_size = 5000
 max_len=85
 epochs=16
 MAX_TRAINING_SEQ_LEN = 1000
-chkpt = "docker_agent_logger/app/classifier_bgl/"
+chkpt = "docker_agent_logger/app/classifier_bgl_filtered/"
 
 raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
@@ -66,9 +66,8 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
 #     tf.data.AUTOTUNE
 # )
 
-
 ds_tokenized = ds.map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE).prefetch(
-    tf.data.AUTOTUNE
+tf.data.AUTOTUNE
 )
 
 #get max length of sequences in ds
@@ -86,7 +85,7 @@ ds_size = 4747963
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)
 
-train_ds = ds_tokenized.take(train_size).shuffle(buffer_size=train_size).batch(128)
+train_ds = ds.take(train_size).filter(lambda x,y: y == False).map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE).shuffle(buffer_size=train_size).batch(128) #train size is too much but maybe it works
 val_ds = ds_tokenized.skip(train_size).take(val_size)
 
 
@@ -95,8 +94,6 @@ model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,ma
 # model.vae.load_model(chkpt=chkpt)
  
 model.train_model(train_ds,epochs=epochs,chkpt=chkpt)
-
-
 
 # def plot_label_clusters(vae, data):
 #     # display a 2D plot of the digit classes in the latent space
