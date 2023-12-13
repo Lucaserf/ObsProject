@@ -37,7 +37,45 @@ class Tokenizer:
         decoded_data = self.tokenizer.detokenize(data)
         return decoded_data
 
+class Model_supervised:
+    def __init__(self, vocab_size, latent_dim, embedding_dim, max_len):
+        input_ids = tf.keras.layers.Input(
+            shape=(max_len,), dtype=tf.int32, name="input_word_ids"
+        )
 
+        input_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
+            vocabulary_size=vocab_size,
+            sequence_length=max_len,
+            embedding_dim=embedding_dim,
+            mask_zero=True,
+            name="input_embedding",
+        )(input_ids)
+
+        encoding = keras_nlp.layers.TransformerEncoder(
+            num_heads=4, intermediate_dim=latent_dim, name="encoding"
+        )(input_embedding)
+
+        lower_dimension_encoding = tf.keras.layers.Dense(latent_dim, name="z_mean")(encoding[:, 0, :])
+
+        classification = tf.keras.layers.Dense(1,activation="sigmoid",name="classification")(lower_dimension_encoding)
+
+
+        self.binary_classifier = tf.keras.Model(
+            inputs=[input_ids], outputs=[classification], name="binary_classifier"
+        )
+    
+    def train_model(self, train_ds,val_ds, epochs, chkpt):
+        self.binary_classifier.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),loss = tf.keras.losses.BinaryCrossentropy(from_logits=True))
+
+        es_cb = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
+        cp_cb = tf.keras.callbacks.ModelCheckpoint(filepath = chkpt, monitor='val_loss', verbose=0, save_best_only=True, mode='auto')
+
+        self.binary_classifier.fit(train_ds,validation_data=val_ds, epochs=epochs, callbacks=[es_cb,cp_cb])
+
+
+    def load_model(self, chkpt):
+        self.binary_classifier.load_weights(chkpt)
+    
 class Model:
     def __init__(self, vocab_size, latent_dim, embedding_dim, max_len):
         input_ids = tf.keras.layers.Input(

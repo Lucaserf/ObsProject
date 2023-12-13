@@ -85,8 +85,13 @@ ds_size = 4747963
 train_size = int((1-val_split) * ds_size)
 val_size = int(val_split * ds_size)
 
-train_ds = ds.take(train_size).filter(lambda x,y: y == False).map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE).shuffle(buffer_size=train_size).batch(128) #train size is too much but maybe it works
-val_ds = ds_tokenized.skip(train_size).take(val_size)
+train_size = 3496193
+
+train_ds = ds.take(train_size).filter(lambda x,y: y == False)
+train_ds = train_ds.map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE)
+train_ds = train_ds.shuffle(buffer_size=train_size).batch(128)
+val_ds = ds.skip(train_size).take(val_size)
+
 
 
 model = Model(vocab_size = vocab_size,latent_dim=max_len//2,embedding_dim=128,max_len = max_len)
