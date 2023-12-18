@@ -1,0 +1,8 @@
+true anomalies: 17462
+false labeled anomalies: 1832
+true labeled anomalies: 331
+precision: 0.1530282015718909
+accuracy: 0.8158198894705659
+F1-score: 0.033732484076433124
+false labeled anomalies rnd: 0
+true labeled anomalies rnd: 0
