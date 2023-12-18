@@ -31,10 +31,16 @@ val_size = int(val_split * ds_size)
 
 val_ds = ds.skip(train_size).take(val_size)
 
+log_generation_time = []
 for i,log in enumerate(val_ds):
     with open("/var/log/BGL{}.log".format(i),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
-    time.sleep(0.1)
+    log_generation_time.append()
+    with open("/var/log/log_generation_time.txt","a") as f:
+        f.write("{}\n".format(str(time.time())))
+    time.sleep(10e-3)
+
+
 
 print("the dataset is finished")
 
