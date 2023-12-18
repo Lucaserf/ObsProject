@@ -1,9 +1,16 @@
 import time
 import tensorflow as tf
+import os
 
 
 data_folder = "/var/data/"
 permanent_folder = "var/log/pv/logging_data/"
+
+try:
+    os.mkdir(permanent_folder)
+except:
+    pass
+
 raw_ds = (
     tf.data.TextLineDataset(data_folder+"BGL.log")
     # .filter(lambda x: tf.strings.length(x) < MAN_TRAINING_SEQ_LEN)
@@ -37,6 +44,7 @@ for i,log in enumerate(val_ds):
         f.write(log[0].numpy().decode("utf-8")+"\n")
     with open(permanent_folder+"log_generation_time.txt","a") as f:
         f.write("{}\n".format(str(time.time())))
+    print("generated log {}".format(i))
     time.sleep(10e-3)
 
 
