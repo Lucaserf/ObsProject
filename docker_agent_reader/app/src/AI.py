@@ -37,7 +37,45 @@ class Tokenizer:
         decoded_data = self.tokenizer.detokenize(data)
         return decoded_data
 
+class Model_supervised:
+    def __init__(self, vocab_size, latent_dim, embedding_dim, max_len):
+        input_ids = tf.keras.layers.Input(
+            shape=(max_len,), dtype=tf.int32, name="input_word_ids"
+        )
 
+        input_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
+            vocabulary_size=vocab_size,
+            sequence_length=max_len,
+            embedding_dim=embedding_dim,
+            mask_zero=True,
+            name="input_embedding",
+        )(input_ids)
+
+        encoding = keras_nlp.layers.TransformerEncoder(
+            num_heads=4, intermediate_dim=latent_dim, name="encoding"
+        )(input_embedding)
+
+        lower_dimension_encoding = tf.keras.layers.Dense(latent_dim, name="z_mean")(encoding[:, 0, :])
+
+        classification = tf.keras.layers.Dense(1,activation="sigmoid",name="classification")(lower_dimension_encoding)
+
+
+        self.binary_classifier = tf.keras.Model(
+            inputs=[input_ids], outputs=[classification], name="binary_classifier"
+        )
+    
+    def train_model(self, train_ds,val_ds, epochs, chkpt):
+        self.binary_classifier.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),loss = tf.keras.losses.BinaryCrossentropy(from_logits=True))
+
+        es_cb = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
+        cp_cb = tf.keras.callbacks.ModelCheckpoint(filepath = chkpt, monitor='val_loss', verbose=0, save_best_only=True, mode='auto')
+
+        self.binary_classifier.fit(train_ds,validation_data=val_ds, epochs=epochs, callbacks=[es_cb,cp_cb])
+
+
+    def load_model(self, chkpt):
+        self.binary_classifier.load_weights(chkpt)
+    
 class Model:
     def __init__(self, vocab_size, latent_dim, embedding_dim, max_len):
         input_ids = tf.keras.layers.Input(
@@ -73,7 +111,7 @@ class Model:
                 max_len,
                 latent_dim,
             ),
-            dtype=tf.float32,
+            dtype=tf.int32,
             name="latent_space_input",
         )
         # decoder_embedding = keras_nlp.layers.TokenAndPositionEmbedding(
@@ -90,7 +128,7 @@ class Model:
         #     name = "decoder"
         # )(decoder_embedding,latent_space_input)
         hidden_layer = tf.keras.layers.Dense(
-            latent_dim, activation="relu", name="hidden_layer"
+            (vocab_size-latent_dim)//2, activation="relu", name="hidden_layer"
         )(latent_space_input)
 
         output = tf.keras.layers.Dense(vocab_size, name="output")(hidden_layer)
@@ -159,10 +197,10 @@ class VAE(tf.keras.Model):
             self.kl_loss_tracker,
         ]
 
-    def train_step(self, data, train=True):
+    def train_step(self, data):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
-            z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
+            z = tf.expand_dims(z, axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
             reconstruction = self.decoder(z)
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
@@ -175,9 +213,9 @@ class VAE(tf.keras.Model):
             kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
             kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
-        if train:
-            grads = tape.gradient(total_loss, self.trainable_weights)
-            self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+
+        grads = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
@@ -186,10 +224,25 @@ class VAE(tf.keras.Model):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
         }
+    
+    def get_loss(self,data):
+        z_mean, z_log_var, z = self.encoder(data)
+        z = tf.expand_dims(z, axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
+        reconstruction = self.decoder(z)
+        reconstruction_loss = tf.reduce_mean(
+            tf.reduce_sum(
+                tf.keras.losses.sparse_categorical_crossentropy(
+                    data, reconstruction, from_logits=True
+                ),
+                axis=(1),
+            )
+        )
+        return reconstruction_loss.numpy()
+
 
     def call(self, data):
         z_mean, z_log_var, z = self.encoder(data)
-        z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len, self.latent_dim),dtype=tf.int32)
+        z = tf.expand_dims(z, axis=1) * tf.ones((1, self.max_len,self.latent_dim),dtype=tf.int32)
         reconstruction = self.decoder(z)
         return reconstruction
 

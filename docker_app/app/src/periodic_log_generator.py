@@ -3,9 +3,9 @@ import tensorflow as tf
 
 
 data_folder = "/var/data/"
-
+permanent_folder = "var/log/pv/logging_data/"
 raw_ds = (
-    tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
+    tf.data.TextLineDataset(data_folder+"BGL.log")
     # .filter(lambda x: tf.strings.length(x) < MAN_TRAINING_SEQ_LEN)
     # .batch(128)
     # .shuffle(buffer_size=256)
@@ -35,8 +35,7 @@ log_generation_time = []
 for i,log in enumerate(val_ds):
     with open("/var/log/BGL{}.log".format(i),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
-    log_generation_time.append()
-    with open("/var/log/log_generation_time.txt","a") as f:
+    with open(permanent_folder+"log_generation_time.txt","a") as f:
         f.write("{}\n".format(str(time.time())))
     time.sleep(10e-3)
 

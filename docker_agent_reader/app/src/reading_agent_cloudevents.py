@@ -18,17 +18,16 @@ def save_times():
     with open(permanent_folder+"times.pkl","wb") as f:
         pickle.dump(times,f)
 
-vocab_size = 4000
-moltiplicatore = 1
-max_len=60*moltiplicatore # mean length + std length
+vocab_size = 5000
+max_len=85
 latent_dim=max_len//2
-threshold = 224.5
-with open("./app/logs_tokenizer/vocab.pkl","rb") as f:
+threshold = 530
+with open("./app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
     vocab = pickle.load(f)
 
 tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
-model.vae.load_model(chkpt="./app/trained_classifier/3float31")
+model.vae.load_model(chkpt="./app/trained_classifier/15")
 
 times = {}
 
@@ -47,27 +46,27 @@ def home():
 
 
     if e_type == "anomaly":
-        times[(id,e_type)] = time.time() - float(event["time"])
+        times[id] = time.time() - float(event["time"])
         print(f"anomaly detected in {id}")
 
     elif e_type == "logs":
         parsed_logs = tokenizer.parsing(data)
         vectorized_logs = tokenizer.vectorization(parsed_logs)
-        losses = model.vae.train_step(vectorized_logs,train=False)
-        if losses["reconstruction_loss"].numpy() > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-        times[event["id"]] = time.time() - float(event["time"])
+        loss = model.vae.get_loss(vectorized_logs)
+        if loss > threshold:
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
+        times[id] = time.time() - float(event["time"])
     elif event["type"] == "parsed_logs":
         vectorized_logs = tokenizer.vectorization(data)
-        losses = model.vae.train_step(vectorized_logs,train=False)
-        if losses["reconstruction_loss"].numpy() > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-        times[event["id"]] = time.time() - float(event["time"])
+        loss = model.vae.get_loss(vectorized_logs)
+        if loss > threshold:
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
+        times[id] = time.time() - float(event["time"])
     elif event["type"] == "vectorized_logs":
-        losses = model.vae.train_step(data,train=False)
-        if losses["reconstruction_loss"].numpy() > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {losses['reconstruction_loss'].numpy()}")
-        times[event["id"]] = time.time() - float(event["time"])
+        loss = model.vae.get_loss(vectorized_logs)
+        if loss > threshold:
+            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
+        times[id] = time.time() - float(event["time"])
     else:
         print("error")
 
