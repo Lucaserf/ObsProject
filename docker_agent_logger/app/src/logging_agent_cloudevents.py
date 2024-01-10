@@ -69,8 +69,6 @@ while True:
     data = [x for x in data if "BGL" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
-    time.sleep(0.01)
-
     #log rotation and aggregation
     if len(data)>= 1:
         i += 1

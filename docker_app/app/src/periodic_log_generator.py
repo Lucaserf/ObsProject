@@ -48,7 +48,6 @@ for i,log in enumerate(val_ds):
     time.sleep(10e-3)
 
 
-
 print("the dataset is finished")
 
 while True:

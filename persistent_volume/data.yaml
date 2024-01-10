@@ -20,4 +20,5 @@ spec:
           operator: In
           values:
           - nodeserf
+          - nodeserf1
           - nodeserf2
