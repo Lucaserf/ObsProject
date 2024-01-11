@@ -78,7 +78,7 @@ while True:
             data_path = os.path.join(log_folder,d)
 
             with open(data_path) as f:
-                logs = f.read().split("\n")[:-1][0]
+                logs = f.read().split("\n")[0]
 
             new_logs.append(logs)
 
@@ -94,7 +94,7 @@ while True:
         # time_after_parse = time.time()
 
         
-        # vectorized_logs = tokenizer.vectorization(new_logs)
+        vectorized_logs = tokenizer.vectorization(new_logs)
 
         # time_after_vectorization = time.time()
 
@@ -107,9 +107,8 @@ while True:
 
         # time_after_detection = time.time()
 
-        compress_and_send(new_logs,"logs",1,i,log_catch_time)
-        # compress_and_send(parsed_logs,"parsed_logs",1,i,time.time()-(time_after_parse-log_catch_time))
-        # compress_and_send(vectorized_logs,"vectorized_logs",1,i,time_after_vectorization)
+        # compress_and_send(new_logs,"logs",1,i,log_catch_time)
+        compress_and_send(vectorized_logs,"vectorized_logs",1,i,log_catch_time)
         # compress_and_send(anomaly,"anomaly",1,i,time_after_detection)
         
         #training step

@@ -25,9 +25,12 @@ tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,max_len = max_len)
 model.vae.load_model(chkpt="./app/trained_classifier/15")
 
-def save_time(time):
+with open(permanent_folder+"time.txt","w") as f:
+    f.write("{},{}\n".format("type","time"))
+
+def save_time(type_log,time):
     with open(permanent_folder+"time.txt","a") as f:
-        f.write("{}\n".format(str(time)))
+        f.write("{},{}\n".format(type_log,str(time)))
 
 app = Flask(__name__)
 
@@ -44,27 +47,27 @@ def home():
 
 
     if e_type == "anomaly":
-        save_time(time.time() - float(event["time"]))
+        save_time(e_type,time.time() - float(event["time"]))
         print(f"anomaly detected in {id}")
 
     elif e_type == "logs":
-        parsed_logs = tokenizer.parsing(data)
-        vectorized_logs = tokenizer.vectorization(parsed_logs)
-        loss = model.vae.get_loss(vectorized_logs)
-        if loss > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
-        save_time(time.time() - float(event["time"]))
-    elif event["type"] == "parsed_logs":
+        # parsed_logs = tokenizer.parsing(data)
         vectorized_logs = tokenizer.vectorization(data)
         loss = model.vae.get_loss(vectorized_logs)
         if loss > threshold:
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
-        save_time(time.time() - float(event["time"]))
+        save_time(e_type,time.time() - float(event["time"]))
+    # elif event["type"] == "parsed_logs":
+    #     vectorized_logs = tokenizer.vectorization(data)
+    #     loss = model.vae.get_loss(vectorized_logs)
+    #     if loss > threshold:
+    #         print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
+    #     save_time(e_type,time.time() - float(event["time"]))
     elif event["type"] == "vectorized_logs":
-        loss = model.vae.get_loss(vectorized_logs)
+        loss = model.vae.get_loss(data)
         if loss > threshold:
             print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
-        save_time(time.time() - float(event["time"]))
+        save_time(e_type,time.time() - float(event["time"]))
     else:
         print("error")
     

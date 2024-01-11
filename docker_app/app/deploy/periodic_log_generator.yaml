@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: periodic-log-generator-job
+  labels:
+    app: periodic-log-generator
+spec:
+  completions: 100
+  parallelism: 1
+  template:
+    spec:   
+      containers:   
+      - image: lucaserf/obs:sim_log
+        imagePullPolicy: Always   
+        name: sim-gen  
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: data
+          mountPath: /var/data/
+      - image: lucaserf/logging_agent:cloudevents
+        name: logging-agent
+        imagePullPolicy: Always
+        volumeMounts:
+         - name: pvlog
+           mountPath: /var/log/pv
+         - name: varlog
+           mountPath: /var/log
+      volumes:
+      - name: varlog
+        emptyDir: {}
+      - name: pvlog
+        persistentVolumeClaim:
+         claimName: myapp-log-pvc
+      - name: data
+        persistentVolumeClaim:
+         claimName: log-data-pvc
+      restartPolicy: Never
+  backoffLimit: 0
