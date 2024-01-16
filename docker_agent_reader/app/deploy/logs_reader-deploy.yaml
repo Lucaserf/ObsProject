@@ -14,7 +14,7 @@ spec:
       name: dataread   
       labels:   
         app: data-reading-example   
-    spec:   
+    spec:
       containers:   
       - image: lucaserf/reading_agent:cloudevents
         imagePullPolicy: Always
@@ -27,7 +27,7 @@ spec:
       volumes:
       - name: pvlog
         persistentVolumeClaim:
-         claimName: myapp-log-pvc
+         claimName: reader-log-pvc
 
 ---
 apiVersion: v1

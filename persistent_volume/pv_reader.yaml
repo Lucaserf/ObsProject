@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: log-data-pv
+  name: reader-log-pv
 spec:
   capacity:
-    storage: 15Gi
+    storage: 2Gi
   volumeMode: Filesystem
   accessModes:
-  - ReadOnlyMany
+  - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /var/data/
+    path: /var/log/
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -19,4 +19,4 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - nodeserf1
+          - nodeserf2

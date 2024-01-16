@@ -42,11 +42,13 @@ log_generation_time = []
 
 
 for i,log in enumerate(val_ds):
+    t = time.time()
     with open("/var/log/BGL{}.log".format(i),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
     # with open(permanent_folder+"log_generation_time.txt","a") as f:
     #     f.write("{}\n".format(str(time.time())))
-    print("generated log {}".format(i))
+    t_el = (time.time()-t)*1000
+    print("generated log {}, after {} ms".format(i,t_el))
     time.sleep(10e-3)
 
 

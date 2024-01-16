@@ -10,7 +10,6 @@ spec:
   parallelism: 1
   template:
     spec:
-      nodeName: nodeserf1
       containers:
       - image: lucaserf/obs:sim_log
         imagePullPolicy: Always
@@ -34,7 +33,7 @@ spec:
         name: varlog
       - name: pvlog
         persistentVolumeClaim:
-          claimName: gen-log-pvc
+          claimName: myapp-log-pvc
       - name: data
         persistentVolumeClaim:
           claimName: log-data-pvc
