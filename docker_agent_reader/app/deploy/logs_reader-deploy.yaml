@@ -23,7 +23,7 @@ spec:
         - containerPort: 3000
         volumeMounts:
           - name: pvlog
-            mountPath: /var/log/pv
+            mountPath: /var/log/pv/
       volumes:
       - name: pvlog
         persistentVolumeClaim:

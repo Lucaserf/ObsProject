@@ -17,6 +17,6 @@ kubectl rollout restart deployment/cloudevents-gen-deployment
 # kubectl apply -f ./docker_app/app/deploy/cloudevents-deploy.yaml
 # kubectl delete -f ./docker_app/app/deploy/cloudevents-deploy.yaml
 
-
+#jobs
 # kubectl apply -f ./docker_app/app/deploy/periodic_log_generator.yaml
 # kubectl delete -f ./docker_app/app/deploy/periodic_log_generator.yaml

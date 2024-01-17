@@ -7,7 +7,7 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 1
+  parallelism: 28
   template:
     spec:
       containers:
@@ -27,13 +27,14 @@ spec:
           name: pvlog
         - mountPath: /var/log
           name: varlog
+      nodeName: nodeserf1
       restartPolicy: Never
       volumes:
       - emptyDir: {}
         name: varlog
       - name: pvlog
         persistentVolumeClaim:
-          claimName: myapp-log-pvc
+          claimName: gen-log-pvc
       - name: data
         persistentVolumeClaim:
           claimName: log-data-pvc
