@@ -14,9 +14,9 @@ with open("./docker_app/app/deploy/periodic_log_generator.yaml") as f:
     dep = yaml.safe_load(f)
 
 i = 1
-scaling = 3
+scaling = 1
 
-while i < 30:
+while i < 5:
 
     dep["spec"]["parallelism"] = i
 
@@ -27,10 +27,10 @@ while i < 30:
 
     print("job updated with parallelism: {}".format(i))
 
-    # run for 5 minutes
-    time.sleep(5*60)
+    # run for x minutes
+    time.sleep(1*60)
 
     i += scaling
 
 
-subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+# subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])

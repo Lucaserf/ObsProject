@@ -1,6 +1,6 @@
-from cloudevents.http import CloudEvent
-from cloudevents.conversion import to_binary
-import requests
+# from cloudevents.http import CloudEvent
+# from cloudevents.conversion import to_binary
+# import requests
 import time
 import os
 import shutil
@@ -11,7 +11,7 @@ import bz2
 import sys
 import tensorflow as tf
 from AI import Tokenizer,Model
-
+import zmq
 
 root = "/"
 log_folder = "/var/log/"
@@ -22,26 +22,36 @@ try:
 except:
     pass
 
-def compress_and_send(data,type_log,repetitions,i,catching_time):
-            
-            compressed_data = bz2.compress(pickle.dumps(data))
-            print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
-            
-            metrics[type_log].append(sys.getsizeof(compressed_data))
+context = zmq.Context()
+socket = context.socket(zmq.PUSH)
+socket.connect("tcp://reader-service.default:3000")
 
-            headers, _ = to_binary(CloudEvent({
+def compress_and_send(data,type_log,i,catching_time,time_last_send):
+            
+            # compressed_data = bz2.compress(pickle.dumps(data))
+            # print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
+            
+            # metrics[type_log].append(sys.getsizeof(compressed_data))
+
+            # headers, _ = to_binary(CloudEvent({
+            #     "id": str(i),
+            #     "type": type_log,
+            #     "source": "simulation",
+            #     "time": str(catching_time),
+            # }, {"data": []}))
+            event = {
                 "id": str(i),
                 "type": type_log,
                 "source": "simulation",
                 "time": str(catching_time),
-            }, {"data": []}))
+                "data": data
+            }
+            compressed_data = bz2.compress(pickle.dumps(event))
 
-            times = []
-            for _ in range(repetitions):
-                t=time.time()
-                r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-                times.append(time.time()-t)
-            print(f"time to send: {np.mean(times)} +- {np.std(times)}\n")
+            socket.send(compressed_data)
+            # r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+            print("generated log {} of size {}, after {} ms".format(i,sys.getsizeof(compressed_data),(time.time()-time_last_send)*1000))
+
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
 vocab_size = 5000
@@ -60,6 +70,8 @@ i = 0
 save_iterations = 20
 
 metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[],"mean_padding":[],"anomaly":[]}
+
+time_last_send = time.time()
 
 while True:
     
@@ -107,9 +119,10 @@ while True:
 
         # time_after_detection = time.time()
 
-        compress_and_send(new_logs,"logs",1,i,log_catch_time)
-        # compress_and_send(vectorized_logs,"vectorized_logs",1,i,log_catch_time)
-        # compress_and_send(anomaly,"anomaly",1,i,log_catch_time)
+        compress_and_send(new_logs,"logs",i,log_catch_time,time_last_send)
+        time_last_send = time.time()
+        # compress_and_send(vectorized_logs,"vectorized_logs",i,log_catch_time)
+        # compress_and_send(anomaly,"anomaly",i,log_catch_time)
         
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())

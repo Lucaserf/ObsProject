@@ -2,3 +2,4 @@ pandas
 cloudevents
 tensorflow
 keras-nlp 
+pyzmq

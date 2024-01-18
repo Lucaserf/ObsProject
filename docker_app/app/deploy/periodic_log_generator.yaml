@@ -16,7 +16,7 @@ spec:
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:
-        - mountPath: /var/log
+        - mountPath: /var/log/
           name: varlog
         - mountPath: /var/data/
           name: data
@@ -24,9 +24,9 @@ spec:
         imagePullPolicy: Always
         name: logging-agent
         volumeMounts:
-        - mountPath: /var/log/pv
+        - mountPath: /var/log/pv/
           name: pvlog
-        - mountPath: /var/log
+        - mountPath: /var/log/
           name: varlog
       restartPolicy: Never
       volumes:

@@ -12,7 +12,7 @@ except:
     pass
 
 raw_ds = (
-    tf.data.TextLineDataset(data_folder+"BGL.log")
+    tf.data.TextLineDataset(data_folder+"test_set_bgl.txt")
     # .filter(lambda x: tf.strings.length(x) < MAN_TRAINING_SEQ_LEN)
     # .batch(128)
     # .shuffle(buffer_size=256)
@@ -29,27 +29,26 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
     tf.data.AUTOTUNE
 )
 
-val_split = 0.2
-ds_size = 4747963
+# val_split = 0.2
+# ds_size = 4747963
 
-train_size = int((1-val_split) * ds_size)
-val_size = int(val_split * ds_size)
-
-
-val_ds = ds.skip(train_size).take(val_size)
-
-log_generation_time = []
+# train_size = int((1-val_split) * ds_size)
+# val_size = int(val_split * ds_size)
 
 
-for i,log in enumerate(val_ds):
-    t = time.time()
+# val_ds = ds.skip(train_size).take(val_size)
+
+
+t = time.time()
+for i,log in enumerate(ds):
+    
+    time.sleep(100e-3)
     with open("/var/log/BGL{}.log".format(i),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
-    # with open(permanent_folder+"log_generation_time.txt","a") as f:
-    #     f.write("{}\n".format(str(time.time())))
-    t_el = (time.time()-t)*1000
-    print("generated log {}, after {} ms".format(i,t_el))
-    time.sleep(10e-3)
+
+    print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
+    t = time.time()
+    
 
 
 print("the dataset is finished")

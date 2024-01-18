@@ -5,4 +5,4 @@ COPY . ./
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python3","-u", "app/src/reading_agent_cloudevents.py"]
+CMD ["python3","-u", "app/src/reading_agent_zeromq.py"]
