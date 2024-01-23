@@ -7,15 +7,15 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 2
+  parallelism: 1
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706005493.1074033'
+          value: '1706006934.929741'
         - name: WAIT_TIME
-          value: 120
+          value: '120'
         image: lucaserf/obs:sim_log
         imagePullPolicy: Always
         name: sim-gen
