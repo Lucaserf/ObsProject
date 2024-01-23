@@ -27,6 +27,9 @@ context = zmq.Context()
 socket = context.socket(zmq.PUSH)
 socket.connect("tcp://reader-service.default:3000")
 
+operation_mode = float(os.environ["OPERATION_MODE"])
+
+
 
 def compress_and_send(data,type_log,i,log_creation_time,catching_time,time_last_send,after_preprocess_time):
             
@@ -55,7 +58,7 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,time_last_
 
             socket.send(compressed_data)
             # r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-            print("generated log {} of size {}, after {} ms".format(i,sys.getsizeof(compressed_data),(time.time()-time_last_send)*1000))
+            # print("generated log {} of size {}, after {} ms".format(i,sys.getsizeof(compressed_data),(time.time()-time_last_send)*1000))
 
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
@@ -108,28 +111,28 @@ while True:  #i< number_logs_to_send:
 
         log_catch_time = time.time()
 
-        # #first step of preprocessing
-        # parsed_logs = tokenizer.parsing(new_logs)
+        if operation_mode == "logs":
+            output = new_logs
 
-        # time_after_parse = time.time()
+        elif operation_mode == "vectorized_logs":
+            output = tokenizer.vectorization(new_logs)
 
+        elif operation_mode == "anomaly":  
+            vectorized_logs = tokenizer.vectorization(new_logs)
+            loss = model.vae.get_loss(vectorized_logs)
         
-        vectorized_logs = tokenizer.vectorization(new_logs)
+            anomaly = False
+            if loss > threshold:
+                anomaly = True
 
-        # loss = model.vae.get_loss(vectorized_logs)
-        
-        # anomaly = False
-        # if loss > threshold:
-        #     anomaly = True
-
+            output = anomaly
+        else:
+            raise ValueError("operation mode not recognized")
 
         after_preprocess_time = time.time()
-        print("ready to send")
 
-        # compress_and_send(new_logs,"logs",i,log_catch_time,time_last_send)
-        compress_and_send(vectorized_logs,"vectorized_logs",i,log_creation_time,log_catch_time,time_last_send,after_preprocess_time)
-        # compress_and_send(anomaly,"anomaly",i,log_catch_time,time_last_send)
-
+        compress_and_send(output,operation_mode,i,log_creation_time,log_catch_time,time_last_send,after_preprocess_time)
+        
         time_last_send = time.time()
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())

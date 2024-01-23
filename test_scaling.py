@@ -43,10 +43,13 @@ time.sleep(100) # wait for the queue to be empty
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 
 
+#parameters job for logs generation
 dep["spec"]["parallelism"] = 1
 #container 0 is the generator
 dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
 dep["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, works
+#container 1 is the agent logger
+dep["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "logs" #operation mode
 
 
 

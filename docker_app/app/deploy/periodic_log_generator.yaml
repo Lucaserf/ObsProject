@@ -26,6 +26,9 @@ spec:
         - mountPath: /var/data/
           name: data
       - image: lucaserf/logging_agent:cloudevents
+        env:
+        - name: OPERATION_MODE
+          value: "logs"
         imagePullPolicy: Always
         name: logging-agent
         volumeMounts:
