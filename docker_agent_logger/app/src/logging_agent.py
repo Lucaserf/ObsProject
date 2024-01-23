@@ -12,6 +12,7 @@ import sys
 import tensorflow as tf
 from AI import Tokenizer,Model
 import zmq
+import time
 
 root = "/"
 log_folder = "/var/log/"
@@ -26,7 +27,8 @@ context = zmq.Context()
 socket = context.socket(zmq.PUSH)
 socket.connect("tcp://reader-service.default:3000")
 
-def compress_and_send(data,type_log,i,catching_time,time_last_send):
+
+def compress_and_send(data,type_log,i,log_creation_time,catching_time,time_last_send,after_preprocess_time):
             
             # compressed_data = bz2.compress(pickle.dumps(data))
             # print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
@@ -40,10 +42,13 @@ def compress_and_send(data,type_log,i,catching_time,time_last_send):
             #     "time": str(catching_time),
             # }, {"data": []}))
             event = {
-                "id": str(i),
+                "id_node": os.environ["HOSTNAME"].split("-")[-1],
+                "id": i,
                 "type": type_log,
                 "source": "simulation",
-                "time": str(catching_time),
+                "catch_time": catching_time,
+                "after_preprocess_time": after_preprocess_time,
+                "log_creation_time": log_creation_time,
                 "data": data
             }
             compressed_data = bz2.compress(pickle.dumps(event))
@@ -58,6 +63,7 @@ vocab_size = 5000
 max_len=85 # mean length + std length
 latent_dim=max_len//2
 threshold = 530
+number_logs_to_send = 1000
 
 with open("./app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
     vocab = pickle.load(f)
@@ -73,7 +79,7 @@ metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vecto
 
 time_last_send = time.time()
 
-while True:
+while True:  #i< number_logs_to_send:
     
     data = os.listdir(log_folder)
     #filtering
@@ -95,6 +101,8 @@ while True:
             new_logs.append(logs)
 
             os.remove(data_path)
+        
+            log_creation_time = float(d[3:-4])
 
         new_logs = tf.constant(new_logs)
 
@@ -106,24 +114,23 @@ while True:
         # time_after_parse = time.time()
 
         
-        # vectorized_logs = tokenizer.vectorization(new_logs)
-
-        # time_after_vectorization = time.time()
+        vectorized_logs = tokenizer.vectorization(new_logs)
 
         # loss = model.vae.get_loss(vectorized_logs)
-
         
         # anomaly = False
         # if loss > threshold:
         #     anomaly = True
 
-        # time_after_detection = time.time()
 
-        compress_and_send(new_logs,"logs",i,log_catch_time,time_last_send)
+        after_preprocess_time = time.time()
+        print("ready to send")
+
+        # compress_and_send(new_logs,"logs",i,log_catch_time,time_last_send)
+        compress_and_send(vectorized_logs,"vectorized_logs",i,log_creation_time,log_catch_time,time_last_send,after_preprocess_time)
+        # compress_and_send(anomaly,"anomaly",i,log_catch_time,time_last_send)
+
         time_last_send = time.time()
-        # compress_and_send(vectorized_logs,"vectorized_logs",i,log_catch_time)
-        # compress_and_send(anomaly,"anomaly",i,log_catch_time)
-        
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())
         # metrics["reconstruction_loss"].append(loss)
@@ -134,10 +141,6 @@ while True:
         #     with open(permanent_folder+"metrics.pkl","wb") as f:
         #         pickle.dump(metrics,f)
 
-        
-
-
-        
 
             
 

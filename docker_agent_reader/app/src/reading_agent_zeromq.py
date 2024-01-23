@@ -6,6 +6,7 @@ import os
 from AI import *
 import time
 import zmq
+import time
 
 permanent_folder = "var/log/pv/logging_data/"
 
@@ -26,51 +27,61 @@ model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,ma
 model.vae.load_model(chkpt="./app/trained_classifier/15")
 
 with open(permanent_folder+"time.txt","w") as f:
-    f.write("{},{}\n".format("type","time"))
+    f.write("{},{},{},{},{},{},{},{}\n".format("id_node","id","type","log_creation_time","catch_time","after_preprocess_time","server_catch_time","completion_time"))
 
-def save_time(type_log,time):
+def save_time(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time):
     with open(permanent_folder+"time.txt","a") as f:
-        f.write("{},{}\n".format(type_log,str(time)))
+        f.write("{},{},{},{},{},{},{},{}\n".format(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time))
 
 
 # create an endpoint at http://localhost:/3000/
+
 context = zmq.Context()
 socket = context.socket(zmq.PULL)
 socket.bind("tcp://*:3000")
+print("starting waiting for logs")
+
 
 while True:
     message = socket.recv()
+    
+
+    server_catch_time = time.time()
 
     event = pickle.loads(bz2.decompress(message))
 
 
     data = event["data"]
-    id = int(event["id"])
-    e_type = event["type"]
+    id_node = event["id_node"]
+    id = event["id"]
+    type_log = event["type"]
+    catch_time = event["catch_time"]
+    log_creation_time = event["log_creation_time"]
+    time_after_preprocess = event["after_preprocess_time"]
 
 
-    if e_type == "anomaly":
-        save_time(e_type,time.time() - float(event["time"]))
-        print(f"anomaly detected in {id}")
+    if type_log == "anomaly":
+        save_time(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time())
+        print(f"anomaly detected in {id_node}")
 
-    elif e_type == "logs":
+    elif type_log == "logs":
         # parsed_logs = tokenizer.parsing(data)
         vectorized_logs = tokenizer.vectorization(data)
         loss = model.vae.get_loss(vectorized_logs)
         if loss > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
-        save_time(e_type,time.time() - float(event["time"]))
+            print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+        save_time(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time())
     # elif event["type"] == "parsed_logs":
     #     vectorized_logs = tokenizer.vectorization(data)
     #     loss = model.vae.get_loss(vectorized_logs)
     #     if loss > threshold:
     #         print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
     #     save_time(e_type,time.time() - float(event["time"]))
-    elif event["type"] == "vectorized_logs":
+    elif type_log == "vectorized_logs":
         loss = model.vae.get_loss(data)
         if loss > threshold:
-            print(f"anomaly detected in {event['id']} with a reconstruction loss of {loss}")
-        save_time(e_type,time.time() - float(event["time"]))
+            print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+        save_time(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time())
     else:
         print("error")
 

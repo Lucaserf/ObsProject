@@ -15,6 +15,7 @@ spec:
       labels:   
         app: data-reading-example   
     spec:
+      nodeName: nodeserf2
       containers:   
       - image: lucaserf/reading_agent:cloudevents
         imagePullPolicy: Always

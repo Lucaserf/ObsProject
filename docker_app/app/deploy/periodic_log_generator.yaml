@@ -13,6 +13,9 @@ spec:
       nodeName: nodeserf1
       containers:
       - image: lucaserf/obs:sim_log
+        env:
+        - name: START_TIME
+          value: "0"
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:

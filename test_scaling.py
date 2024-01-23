@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import yaml
 import time
 # import datetime
@@ -13,24 +14,41 @@ import subprocess
 with open("./docker_app/app/deploy/periodic_log_generator.yaml") as f:
     dep = yaml.safe_load(f)
 
-i = 1
-scaling = 1
+# i = 1
+# scaling = 1
 
-while i < 5:
+# while i < 5:
 
-    dep["spec"]["parallelism"] = i
+#     dep["spec"]["parallelism"] = i
 
-    with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
-        yaml.dump(dep,f)
+#     with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
+#         yaml.dump(dep,f)
 
-    subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+#     subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 
-    print("job updated with parallelism: {}".format(i))
+#     print("job updated with parallelism: {}".format(i))
 
-    # run for x minutes
-    time.sleep(1*60)
+#     # run for x minutes
+#     time.sleep(1*60)
 
-    i += scaling
+#     i += scaling
 
 
 # subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+    
+
+subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
+
+time.sleep(80)
+
+dep["spec"]["parallelism"] = 4
+dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time())
+
+with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
+        yaml.dump(dep,f)
+
+subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+
+
+

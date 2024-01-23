@@ -3,6 +3,7 @@ import tensorflow as tf
 import os
 
 
+
 data_folder = "/var/data/"
 permanent_folder = "var/log/pv/logging_data/"
 
@@ -38,17 +39,23 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
 
 # val_ds = ds.skip(train_size).take(val_size)
 
+start_time = float(os.environ["START_TIME"])
+
+#sleep until 100 seconds after start_time
+sync_time = 40
+if sync_time-(time.time()-start_time) > 0:
+    time.sleep(sync_time-(time.time()-start_time))
+
 
 t = time.time()
 for i,log in enumerate(ds):
     
     time.sleep(100e-3)
-    with open("/var/log/BGL{}.log".format(i),"w") as f:
+    with open("/var/log/BGL{}.log".format(str(time.time())),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
 
     print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
     t = time.time()
     
-
 
 print("the dataset is finished")
