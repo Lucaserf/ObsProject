@@ -40,10 +40,13 @@ with open("./docker_app/app/deploy/periodic_log_generator.yaml") as f:
 subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 
-time.sleep(80)
 
-dep["spec"]["parallelism"] = 4
-dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time())
+dep["spec"]["parallelism"] = 2
+#container 0 is the generator
+dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
+dep["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time
+
+
 
 with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
         yaml.dump(dep,f)

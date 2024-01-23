@@ -42,7 +42,7 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
 start_time = float(os.environ["START_TIME"])
 
 #sleep until 100 seconds after start_time
-sync_time = 40
+sync_time = float(os.environ["WAIT_TIME"])
 if sync_time-(time.time()-start_time) > 0:
     time.sleep(sync_time-(time.time()-start_time))
 

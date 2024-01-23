@@ -16,6 +16,8 @@ spec:
         env:
         - name: START_TIME
           value: "0"
+        - name: WAIT_TIME
+          value: "100"
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:
