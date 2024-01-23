@@ -27,7 +27,7 @@ context = zmq.Context()
 socket = context.socket(zmq.PUSH)
 socket.connect("tcp://reader-service.default:3000")
 
-operation_mode = float(os.environ["OPERATION_MODE"])
+operation_mode = os.environ["OPERATION_MODE"]
 
 
 
@@ -132,7 +132,7 @@ while True:  #i< number_logs_to_send:
         after_preprocess_time = time.time()
 
         compress_and_send(output,operation_mode,i,log_creation_time,log_catch_time,time_last_send,after_preprocess_time)
-        
+
         time_last_send = time.time()
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())

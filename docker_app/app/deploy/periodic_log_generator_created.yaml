@@ -7,13 +7,13 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 3
+  parallelism: 1
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706019037.0277033'
+          value: '1706029643.9312007'
         - name: WAIT_TIME
           value: '120'
         image: lucaserf/obs:sim_log
@@ -24,7 +24,10 @@ spec:
           name: varlog
         - mountPath: /var/data/
           name: data
-      - image: lucaserf/logging_agent:cloudevents
+      - env:
+        - name: OPERATION_MODE
+          value: logs
+        image: lucaserf/logging_agent:cloudevents
         imagePullPolicy: Always
         name: logging-agent
         volumeMounts:
