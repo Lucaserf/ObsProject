@@ -1,5 +1,6 @@
 import kubernetes as k8s
 import time 
+import argparse
 
 k8s.config.load_kube_config()
 
@@ -12,11 +13,16 @@ api = k8s.client.CustomObjectsApi()
 # {'metadata': {'name': 'periodic-log-generator-job-gzqck', 'namespace': 'default', 'creationTimestamp': '2024-01-24T14:41:16Z', 'labels': {'batch.kubernetes.io/controller-uid': '09c31498-8702-4ae7-97c0-bbc5bb7e4510', 'batch.kubernetes.io/job-name': 'periodic-log-generator-job', 'controller-uid': '09c31498-8702-4ae7-97c0-bbc5bb7e4510', 'job-name': 'periodic-log-generator-job'}}, 'timestamp': '2024-01-24T14:40:51Z', 'window': '15.198s', 'containers': [{'name': 'sim-gen', 'usage': {'cpu': '19625213n', 'memory': '203844Ki'}}, {'name': 'logging-agent', 'usage': {'cpu': '991583778n', 'memory': '402216Ki'}}]}]}
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-t","--time_monitor",type=int,default=100)
+args = parser.parse_args()
+
 with open("./data/cluster_metrics.txt","w") as f:
     f.write("node,pod,container,cpu,memory\n")
 
 
-for i in range(100):
+
+for i in range(args.time_monitor):
     resource = api.list_namespaced_custom_object(group="metrics.k8s.io",version="v1beta1", namespace="default", plural="pods")
     for pod in resource["items"]:
         pod_data = k8s_core_v1.read_namespaced_pod(name=pod["metadata"]["name"],namespace="default")
