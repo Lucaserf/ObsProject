@@ -13,9 +13,11 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706105747.7552364'
+          value: '1706179549.7820733'
         - name: WAIT_TIME
-          value: '120'
+          value: '0'
+        - name: GEN_PERIOD
+          value: '0.15'
         image: lucaserf/obs:sim_log
         imagePullPolicy: Always
         name: sim-gen

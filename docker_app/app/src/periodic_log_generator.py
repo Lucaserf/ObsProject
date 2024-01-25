@@ -46,15 +46,19 @@ sync_time = float(os.environ["WAIT_TIME"])
 if sync_time-(time.time()-start_time) > 0:
     time.sleep(sync_time-(time.time()-start_time))
 
+gen_period = float(os.environ["GEN_PERIOD"])
+
 
 t = time.time()
 for i,log in enumerate(ds):
+    if gen_period-(time.time()-t) > 0:
+        time.sleep(gen_period-(time.time()-t))
     
-    time.sleep(100e-3)
     with open("/var/log/BGL{}.log".format(str(time.time())),"w") as f:
         f.write(log[0].numpy().decode("utf-8")+"\n")
 
     print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
+    
     t = time.time()
     
 

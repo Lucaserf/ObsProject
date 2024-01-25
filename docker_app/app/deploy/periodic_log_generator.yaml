@@ -18,6 +18,8 @@ spec:
           value: "0"
         - name: WAIT_TIME
           value: "100"
+        - name: GEN_PERIOD
+          value: "0.15"
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:
