@@ -13,7 +13,7 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706522660.5596066'
+          value: '1706540342.8687632'
         - name: WAIT_TIME
           value: '120'
         - name: GEN_PERIOD
@@ -28,7 +28,7 @@ spec:
           name: data
       - env:
         - name: OPERATION_MODE
-          value: vectorized_logs
+          value: logs
         image: lucaserf/logging_agent:cloudevents
         imagePullPolicy: Always
         name: logging-agent

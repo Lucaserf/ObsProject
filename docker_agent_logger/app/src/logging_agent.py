@@ -44,6 +44,8 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
             #     "source": "simulation",
             #     "time": str(catching_time),
             # }, {"data": []}))
+            compressed_data = bz2.compress(pickle.dumps(event))
+
             event = {
                 "id_node": os.environ["HOSTNAME"].split("-")[-1],
                 "id": i,
@@ -52,11 +54,14 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
                 "catch_time": catching_time,
                 "after_preprocess_time": after_preprocess_time,
                 "log_creation_time": log_creation_time,
-                "data": data
+                "data": compressed_data,
+                "data_size" : sys.getsizeof(compressed_data)
             }
-            compressed_data = bz2.compress(pickle.dumps(event))
 
-            socket.send(compressed_data)
+            compressed_event = bz2.compress(pickle.dumps(event))
+            
+
+            socket.send(compressed_event)
             # r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
 
 

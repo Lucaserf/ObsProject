@@ -45,15 +45,14 @@ while True:
     
     event = pickle.loads(bz2.decompress(message))
 
-    data = event["data"]
+    data = pickle.loads(bz2.decompress(event["data"]))
     id_node = event["id_node"]
     id = event["id"]
     type_log = event["type"]
     catch_time = event["catch_time"]
     log_creation_time = event["log_creation_time"]
     time_after_preprocess = event["after_preprocess_time"]
-
-    data_size = sys.getsizeof(data)
+    data_size = event["data_size"]
 
     if type_log == "anomaly":
         print(f"anomaly detected in {id_node}")
