@@ -31,7 +31,7 @@ operation_mode = os.environ["OPERATION_MODE"]
 
 
 
-def compress_and_send(data,type_log,i,log_creation_time,catching_time,time_last_send,after_preprocess_time):
+def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_preprocess_time):
             
             # compressed_data = bz2.compress(pickle.dumps(data))
             # print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
@@ -58,7 +58,6 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,time_last_
 
             socket.send(compressed_data)
             # r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
-            # print("generated log {} of size {}, after {} ms".format(i,sys.getsizeof(compressed_data),(time.time()-time_last_send)*1000))
 
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference
@@ -131,9 +130,8 @@ while True:  #i< number_logs_to_send:
 
         after_preprocess_time = time.time()
 
-        compress_and_send(output,operation_mode,i,log_creation_time,log_catch_time,time_last_send,after_preprocess_time)
+        compress_and_send(output,operation_mode,i,log_creation_time,log_catch_time,after_preprocess_time)
 
-        time_last_send = time.time()
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())
         # metrics["reconstruction_loss"].append(loss)

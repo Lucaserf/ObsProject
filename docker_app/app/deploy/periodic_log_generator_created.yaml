@@ -13,11 +13,11 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706179549.7820733'
+          value: '1706522660.5596066'
         - name: WAIT_TIME
-          value: '0'
+          value: '120'
         - name: GEN_PERIOD
-          value: '0.15'
+          value: '0.2'
         image: lucaserf/obs:sim_log
         imagePullPolicy: Always
         name: sim-gen
@@ -28,7 +28,7 @@ spec:
           name: data
       - env:
         - name: OPERATION_MODE
-          value: logs
+          value: vectorized_logs
         image: lucaserf/logging_agent:cloudevents
         imagePullPolicy: Always
         name: logging-agent
