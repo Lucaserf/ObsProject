@@ -44,7 +44,7 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
             #     "source": "simulation",
             #     "time": str(catching_time),
             # }, {"data": []}))
-            compressed_data = bz2.compress(pickle.dumps(event))
+            compressed_data = bz2.compress(pickle.dumps(data))
 
             event = {
                 "id_node": os.environ["HOSTNAME"].split("-")[-1],
@@ -111,7 +111,9 @@ while True:  #i< number_logs_to_send:
         
             log_creation_time = float(d[3:-4])
 
+
         new_logs = tf.constant(new_logs)
+
 
         log_catch_time = time.time()
 

@@ -13,9 +13,9 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1706540342.8687632'
+          value: '1706552802.4846299'
         - name: WAIT_TIME
-          value: '120'
+          value: '0'
         - name: GEN_PERIOD
           value: '0.2'
         image: lucaserf/obs:sim_log
