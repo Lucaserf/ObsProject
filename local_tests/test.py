@@ -7,6 +7,7 @@ import numpy as np
 
 
 
+
 raw_ds = (
     tf.data.TextLineDataset("./../test_set_bgl.txt")
     # .filter(lambda x: tf.strings.length(x) < MAN_TRAINING_SEQ_LEN)
@@ -41,6 +42,7 @@ batch  = 10
 
 t = time.time()
 for i,log in enumerate(ds.batch(batch)):
+
     if gen_period-(time.time()-t) > 0:
         time.sleep(gen_period-(time.time()-t))
 
