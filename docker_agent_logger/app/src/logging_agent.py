@@ -97,7 +97,6 @@ while True:  #i< number_logs_to_send:
     #log rotation and aggregation
     if len(data)>= 1:
         i += 1
-        print(data)
 
         for d in data[:1]:
             print(f"doing{d}")
@@ -106,16 +105,15 @@ while True:  #i< number_logs_to_send:
             with open(data_path) as f:
                 new_logs = f.read().split("\n")[:-1] #escluding the last line because it is empty
 
-            
+            if new_logs == []:
+                continue
 
             os.remove(data_path)
         
             log_creation_time = float(d[3:-4])
-            
+
         if new_logs == []:
                 continue
-
-        print(new_logs)
     
         new_logs = tf.constant(new_logs)
 
