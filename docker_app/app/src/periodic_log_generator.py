@@ -56,8 +56,11 @@ for i,log in enumerate(ds.batch(batch)):
     if gen_period-(time.time()-t) > 0:
         time.sleep(gen_period-(time.time()-t))
     
-    with open("/var/log/BGL{}.log".format(str(time.time())),"w") as f:
+    with open("/var/log/tmp.log","w") as f:
             f.write("\n".join([x.decode("utf-8") for x in log[0].numpy()])+"\n")
+
+    os.rename("/var/log/tmp.log","/var/log/BGL{}.log".format(str(time.time())))
+    
 
     print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
     
