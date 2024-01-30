@@ -39,7 +39,7 @@ with open("./docker_app/app/deploy/periodic_log_generator.yaml") as f:
 
 subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 
-time.sleep(0) # 100 wait for the queue to be empty
+time.sleep(100) # 100 wait for the queue to be empty
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 
 
@@ -47,7 +47,7 @@ subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 dep["spec"]["parallelism"] = 1
 #container 0 is the generator
 dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
-dep["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(0) #wait time 120, for sincronization and also waits the logging-agent to be ready
+dep["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, for sincronization and also waits the logging-agent to be ready
 dep["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = str(0.2) #period
 #container 1 is the agent logger
 dep["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "logs" #operation mode (logs, vectorized_logs, anomaly)

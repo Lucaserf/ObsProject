@@ -48,9 +48,11 @@ if sync_time-(time.time()-start_time) > 0:
 
 gen_period = float(os.environ["GEN_PERIOD"])
 
+batch  = int(os.environ["BATCH_SIZE"])
+
 
 t = time.time()
-for i,log in enumerate(ds):
+for i,log in enumerate(ds.batch(batch)):
     if gen_period-(time.time()-t) > 0:
         time.sleep(gen_period-(time.time()-t))
     
