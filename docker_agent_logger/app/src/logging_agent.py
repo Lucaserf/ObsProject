@@ -10,7 +10,7 @@ import numpy as np
 import bz2
 import sys
 import tensorflow as tf
-from AI import Tokenizer,Model
+from AI import *
 import zmq
 import time
 
@@ -97,23 +97,27 @@ while True:  #i< number_logs_to_send:
     #log rotation and aggregation
     if len(data)>= 1:
         i += 1
-        new_logs = []
+        print(data)
 
         for d in data[:1]:
+            print(f"doing{d}")
             data_path = os.path.join(log_folder,d)
 
             with open(data_path) as f:
-                logs = f.read().split("\n")[0]
+                new_logs = f.read().split("\n")[:-1] #escluding the last line because it is empty
 
-            new_logs.append(logs)
+            
 
             os.remove(data_path)
         
             log_creation_time = float(d[3:-4])
+            
+        if new_logs == []:
+                continue
 
-
+        print(new_logs)
+    
         new_logs = tf.constant(new_logs)
-
 
         log_catch_time = time.time()
 
@@ -126,10 +130,11 @@ while True:  #i< number_logs_to_send:
         elif operation_mode == "anomaly":  
             vectorized_logs = tokenizer.vectorization(new_logs)
             loss = model.vae.get_loss(vectorized_logs)
-        
             anomaly = False
-            if loss > threshold:
-                anomaly = True
+            for l in loss:
+                if l > threshold:
+                    anomaly = True
+                    break
 
             output = anomaly
         else:

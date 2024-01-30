@@ -229,14 +229,12 @@ class VAE(tf.keras.Model):
         z_mean, z_log_var, z = self.encoder(data)
         z = tf.expand_dims(z, axis=1)*tf.ones((1,self.max_len,self.latent_dim),dtype=tf.int32)
         reconstruction = self.decoder(z)
-        reconstruction_loss = tf.reduce_mean(
-            tf.reduce_sum(
+        reconstruction_loss = tf.reduce_sum(
                 tf.keras.losses.sparse_categorical_crossentropy(
                     data, reconstruction, from_logits=True
                 ),
                 axis=(1),
             )
-        )
         return reconstruction_loss.numpy()
 
 

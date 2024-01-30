@@ -48,7 +48,7 @@ if sync_time-(time.time()-start_time) > 0:
 
 gen_period = float(os.environ["GEN_PERIOD"])
 
-batch  = int(os.environ["BATCH_SIZE"])
+batch = int(os.environ["BATCH_SIZE"])
 
 
 t = time.time()
@@ -57,7 +57,7 @@ for i,log in enumerate(ds.batch(batch)):
         time.sleep(gen_period-(time.time()-t))
     
     with open("/var/log/BGL{}.log".format(str(time.time())),"w") as f:
-        f.write(log[0].numpy().decode("utf-8")+"\n")
+            f.write("\n".join([x.decode("utf-8") for x in log[0].numpy()])+"\n")
 
     print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
     

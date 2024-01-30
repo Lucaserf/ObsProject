@@ -61,8 +61,10 @@ while True:
         # parsed_logs = tokenizer.parsing(data)
         vectorized_logs = tokenizer.vectorization(data)
         loss = model.vae.get_loss(vectorized_logs)
-        if loss > threshold:
-            print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+        for l in loss:
+            if l > threshold:
+                print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+                break 
     # elif event["type"] == "parsed_logs":
     #     vectorized_logs = tokenizer.vectorization(data)
     #     loss = model.vae.get_loss(vectorized_logs)
@@ -71,8 +73,10 @@ while True:
     #     save_time(e_type,time.time() - float(event["time"]))
     elif type_log == "vectorized_logs":
         loss = model.vae.get_loss(data)
-        if loss > threshold:
-            print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+        for l in loss:
+            if l > threshold:
+                print(f"anomaly detected in {id_node} with a reconstruction loss of {loss}")
+                break 
     else:
         raise ValueError("operation mode not recognized")
 
