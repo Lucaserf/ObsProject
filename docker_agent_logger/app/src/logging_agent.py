@@ -122,11 +122,12 @@ while True:  #i< number_logs_to_send:
         elif operation_mode == "anomaly":  
             vectorized_logs = tokenizer.vectorization(new_logs)
             loss = model.vae.get_loss(vectorized_logs)
-            anomaly = False
+            anomaly = []
             for l in loss:
                 if l > threshold:
-                    anomaly = True
-                    break
+                    anomaly.append(True)
+                else:
+                    anomaly.append(False)
 
             output = anomaly
         else:
