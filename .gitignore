@@ -5,4 +5,5 @@ docker_agent_logger/app/classifier/*
 docker_agent_logger/app/classifier_labeled/*
 docker_agent_logger/app/classifier_bgl/*
 docker_agent_logger/app/classifier_bgl_filtered/*
+docker_agent_logger/app/classifier_bgl_filtered_labeled/*
 *.out
