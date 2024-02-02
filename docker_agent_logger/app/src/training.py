@@ -25,10 +25,10 @@ import matplotlib.pyplot as plt
 
 
 vocab_size = 5000
-max_len=85
+max_len=10
 epochs=16
 MAX_TRAINING_SEQ_LEN = 1000
-chkpt = "docker_agent_logger/app/classifier_bgl_filtered/"
+chkpt = "docker_agent_logger/app/classifier_bgl_filtered_parsed/"
 
 raw_ds = ( #
     tf.data.TextLineDataset("persistent_volume/data/BGL/BGL.log")
@@ -45,11 +45,11 @@ raw_ds = ( #
 # with open("docker_agent_logger/app/logs_tokenizer/vocab.pkl","wb") as f:
 #     pickle.dump(vocab,f)
 
-with open("docker_agent_logger/app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
+with open("docker_agent_logger/app/logs_tokenizer/vocab_parsed_bgl.pkl","rb") as f:
     vocab = pickle.load(f)
 
+tokenizer = Tokenizer(vocab,max_len)
 
-tokenizer = Tokenizer(vocab=vocab,max_len=max_len)
 
 def get_labels(data: tf.Tensor):
     data = data.decode("utf-8")
@@ -65,6 +65,9 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
 # ds = raw_ds.map(lambda x: tf.numpy_function(func=take_out_labels,inp=[x],Tout=tf.string), num_parallel_calls=tf.data.AUTOTUNE).prefetch(
 #     tf.data.AUTOTUNE
 # )
+
+ds_parsed = raw_ds.map(lambda x,y: (tf.strings.regex_replace(x, r".*RAS",""),y), num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
+
 
 ds_tokenized = ds.map(lambda x,y: tokenizer.vectorization(x)[0], num_parallel_calls=tf.data.AUTOTUNE).prefetch(
 tf.data.AUTOTUNE
