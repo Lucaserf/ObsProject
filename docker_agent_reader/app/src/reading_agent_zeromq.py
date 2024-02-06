@@ -57,15 +57,15 @@ while True:
     data_size = event["data_size"]
 
     if type_log == "anomaly":
-        for i,log in enumerate(data):
-            if log:
+        for i,l in enumerate(data):
+            if l:
                 print(f"anomaly detected in {i} for event {id} in node {id_node}")
 
     elif type_log == "logs":
         # parsed_logs = tokenizer.parsing(data)
         vectorized_logs = tokenizer.vectorization(data)
         loss = model.vae.get_loss(vectorized_logs)
-        for l in enumerate(loss):
+        for i,l in enumerate(loss):
             if l > threshold:
                 print(f"anomaly detected in {i} for event {id} in node {id_node} with a reconstruction loss of {loss}")
                 break 
