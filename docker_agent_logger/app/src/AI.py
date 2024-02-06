@@ -18,8 +18,9 @@ class Tokenizer:
             end_value=self.tokenizer.token_to_id("[EOS]"),
         )
 
-    def parsing(self, data):
-        data = tf.strings.regex_replace(data, r"\b[a-zA-Z\d\-_\.]{20,}\b", "*")
+    def parsing(data):
+        # data = tf.strings.regex_replace(data, r'\b[a-zA-Z\d\-_\.]{20,}\b', '*')
+        data = tf.strings.regex_replace(data, r".*RAS","")
         return data
 
     def vectorization(self, data):
