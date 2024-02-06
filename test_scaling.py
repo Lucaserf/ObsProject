@@ -20,7 +20,7 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy.yaml","r") as f:
 dep_service = dep_read_doc[1]
 dep_read = dep_read_doc[0]
 #parameters for server
-dep_read["spec"]["replicas"] = 2
+dep_read["spec"]["replicas"] = 1
 
 dep_read_doc = dep_service,dep_read
 
@@ -31,14 +31,14 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml","w"
 
 
 #parameters job for logs generation
-dep_gen["spec"]["parallelism"] = 3
+dep_gen["spec"]["parallelism"] = 2
 #container 0 is the generator
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, for sincronization and also waits the logging-agent to be ready
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = str(0.15) #period 0.2
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = str(1) #batch
 #container 1 is the agent logger
-dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "vectorized_logs" #operation mode (logs, vectorized_logs, anomaly)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "logs" #operation mode (logs, vectorized_logs, anomaly)
 
 
 

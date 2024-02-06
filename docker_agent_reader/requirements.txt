@@ -4,3 +4,4 @@ flask
 tensorflow==2.14.0
 keras-nlp
 pyzmq
+msgpack

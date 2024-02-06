@@ -1,3 +1,4 @@
 flask
 pandas
 tensorflow
+msgpack

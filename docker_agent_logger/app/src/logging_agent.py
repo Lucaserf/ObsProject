@@ -3,16 +3,13 @@
 # import requests
 import time
 import os
-import shutil
-import pickle
-import pandas as pd
-import numpy as np
-import bz2
 import sys
 import tensorflow as tf
 from AI import *
 import zmq
 import time
+import msgpack
+import pickle
 
 root = "/"
 log_folder = "/var/log/"
@@ -44,7 +41,6 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
             #     "source": "simulation",
             #     "time": str(catching_time),
             # }, {"data": []}))
-            compressed_data = bz2.compress(pickle.dumps(data))
 
             event = {
                 "id_node": os.environ["HOSTNAME"].split("-")[-1],
@@ -54,11 +50,10 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
                 "catch_time": catching_time,
                 "after_preprocess_time": after_preprocess_time,
                 "log_creation_time": log_creation_time,
-                "data": compressed_data,
-                "data_size" : sys.getsizeof(compressed_data)
+                "data": data,
             }
 
-            compressed_event = bz2.compress(pickle.dumps(event))
+            compressed_event = msgpack.packb(event)
             
 
             socket.send(compressed_event)
@@ -108,8 +103,6 @@ while True:  #i< number_logs_to_send:
         os.remove(data_path)
     
         log_creation_time = float(d[3:-4])
-    
-        new_logs = tf.constant(new_logs)
 
         log_catch_time = time.time()
 
@@ -117,10 +110,11 @@ while True:  #i< number_logs_to_send:
             output = new_logs
 
         elif operation_mode == "vectorized_logs":
-            output = tokenizer.vectorization(new_logs)
+            output = tokenizer.tokenizer(new_logs).numpy()
+            output = [lv.tolist() for lv in output]
 
         elif operation_mode == "anomaly":  
-            vectorized_logs = tokenizer.vectorization(new_logs)
+            vectorized_logs = tokenizer.tokenizer(new_logs)
             loss = model.vae.get_loss(vectorized_logs)
             anomaly = []
             for l in loss:

@@ -7,13 +7,13 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 3
+  parallelism: 2
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1707224938.2471492'
+          value: '1707238053.5927112'
         - name: WAIT_TIME
           value: '120'
         - name: GEN_PERIOD
@@ -30,7 +30,7 @@ spec:
           name: data
       - env:
         - name: OPERATION_MODE
-          value: vectorized_logs
+          value: logs
         image: lucaserf/logging_agent:cloudevents
         imagePullPolicy: Always
         name: logging-agent

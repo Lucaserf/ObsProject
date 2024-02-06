@@ -3,3 +3,4 @@ cloudevents
 tensorflow
 keras-nlp 
 pyzmq
+msgpack
