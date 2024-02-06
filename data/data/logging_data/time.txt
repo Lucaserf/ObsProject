@@ -1,1 +1,0 @@
-id_node,id,type,log_creation_time,catch_time,after_preprocess_time,server_catch_time,completion_time,size,id_server
