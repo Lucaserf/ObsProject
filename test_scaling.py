@@ -12,51 +12,45 @@ import subprocess
 
 
 with open("./docker_app/app/deploy/periodic_log_generator.yaml") as f:
-    dep = yaml.safe_load(f)
+    dep_gen = yaml.safe_load(f)
 
-# i = 1
-# scaling = 1
+with open("./docker_agent_reader/app/deploy/logs_reader_deploy.yaml","r") as f:
+    dep_read_doc = yaml.safe_load_all(f)
+    dep_read_doc = list(dep_read_doc)
+dep_service = dep_read_doc[1]
+dep_read = dep_read_doc[0]
+#parameters for server
+dep_read["spec"]["replicas"] = 2
 
-# while i < 5:
-
-#     dep["spec"]["parallelism"] = i
-
-#     with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
-#         yaml.dump(dep,f)
-
-#     subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
-
-#     print("job updated with parallelism: {}".format(i))
-
-#     # run for x minutes
-#     time.sleep(1*60)
-
-#     i += scaling
+dep_read_doc = dep_service,dep_read
 
 
-# subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
-    
 
-subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
-
-time.sleep(100) # 100 wait for the queue to be empty
-subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
+with open("./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml","w") as f:
+        yaml.safe_dump_all(dep_read_doc,f)
 
 
 #parameters job for logs generation
-dep["spec"]["parallelism"] = 1
+dep_gen["spec"]["parallelism"] = 1
 #container 0 is the generator
-dep["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
-dep["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, for sincronization and also waits the logging-agent to be ready
-dep["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = str(10) #period 0.2
-dep["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = str(10) #batch
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, for sincronization and also waits the logging-agent to be ready
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = str(10) #period 0.2
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = str(1) #batch
 #container 1 is the agent logger
-dep["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "anomaly" #operation mode (logs, vectorized_logs, anomaly)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "logs" #operation mode (logs, vectorized_logs, anomaly)
 
 
 
 with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as f:
-        yaml.dump(dep,f)
+        yaml.dump(dep_gen,f)
+
+
+subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
+subprocess.run(["kubectl","apply","-f","./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml"])
+
+time.sleep(100) # 100 wait for the queue to be empty
+subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 
 subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 

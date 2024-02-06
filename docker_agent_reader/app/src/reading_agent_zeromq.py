@@ -10,6 +10,8 @@ import time
 
 permanent_folder = "var/log/pv/logging_data/"
 
+id_server = os.environ["HOSTNAME"].split("-")[-1]
+
 try:
     os.mkdir(permanent_folder)
 except:
@@ -27,7 +29,7 @@ model = Model(vocab_size = vocab_size,latent_dim=latent_dim,embedding_dim=128,ma
 model.vae.load_model(chkpt="./app/trained_classifier/15")
 
 with open(permanent_folder+"time.txt","w") as f:
-    f.write("{},{},{},{},{},{},{},{},{}\n".format("id_node","id","type","log_creation_time","catch_time","after_preprocess_time","server_catch_time","completion_time","size"))
+    f.write("{},{},{},{},{},{},{},{},{},{}\n".format("id_node","id","type","log_creation_time","catch_time","after_preprocess_time","server_catch_time","completion_time","size","id_server"))
 
 
 # create an endpoint at http://localhost:/3000/
@@ -80,9 +82,11 @@ while True:
                 print(f"anomaly detected in {i} for event {id} in node {id_node} with a reconstruction loss of {loss}")
     else:
         raise ValueError("operation mode not recognized")
+    
+    print(f"log processed in {i} for event {id} in node {id_node} with a reconstruction loss of {loss}")
 
     with open(permanent_folder+"time.txt","a") as f:
-        f.write("{},{},{},{},{},{},{},{},{}\n".format(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time(),data_size))
+        f.write("{},{},{},{},{},{},{},{},{},{}\n".format(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time(),data_size,id_server))
 
 
 

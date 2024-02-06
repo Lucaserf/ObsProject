@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reader-service
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: data-reading-example
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: data-generation-example
+  name: dataread-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: data-reading-example
+  template:
+    metadata:
+      labels:
+        app: data-reading-example
+      name: dataread
+    spec:
+      containers:
+      - image: lucaserf/reading_agent:cloudevents
+        imagePullPolicy: Always
+        name: dataread
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - mountPath: /var/log/pv/
+          name: pvlog
+      nodeName: nodeserf2
+      volumes:
+      - name: pvlog
+        persistentVolumeClaim:
+          claimName: reader-log-pvc
