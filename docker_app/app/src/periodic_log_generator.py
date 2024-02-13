@@ -1,6 +1,7 @@
 import time
 import tensorflow as tf
 import os
+import numpy as np
 
 
 
@@ -30,6 +31,8 @@ ds = raw_ds.map(lambda x: tf.numpy_function(func=get_labels,inp=[x],Tout=(tf.str
     tf.data.AUTOTUNE
 )
 
+np.random.seed(int(os.environ["SEED"]))
+
 # val_split = 0.2
 # ds_size = 4747963
 
@@ -43,16 +46,27 @@ start_time = float(os.environ["START_TIME"])
 
 #sleep until 100 seconds after start_time
 sync_time = float(os.environ["WAIT_TIME"])
-if sync_time-(time.time()-start_time) > 0:
-    time.sleep(sync_time-(time.time()-start_time))
+desync_time = sync_time-(time.time()-start_time)
+if  desync_time > 0:
+    time.sleep(desync_time)
 
-gen_period = float(os.environ["GEN_PERIOD"])
+gen_period = os.environ["GEN_PERIOD"].split(",")
+gen_period_min, gen_period_max = float(gen_period[0]), float(gen_period[1])
+gen_period = gen_period_max
 
 batch = int(os.environ["BATCH_SIZE"])
 
-
+period_change = 1 #seconds
+t_change = time.time()+period_change+1
 t = time.time()
+
 for i,log in enumerate(ds.batch(batch)):
+    if period_change-(time.time()-t_change) < 0:
+        new_speed = np.random.normal(0.5,0.2)
+        while new_speed < 0 or new_speed > 1:
+            new_speed = np.random.normal(0.5,0.2)
+        gen_period = (gen_period_max-gen_period_min)*new_speed+gen_period_min
+        t_change = time.time()
     if gen_period-(time.time()-t) > 0:
         time.sleep(gen_period-(time.time()-t))
     

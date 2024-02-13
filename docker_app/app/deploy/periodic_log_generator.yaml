@@ -22,6 +22,8 @@ spec:
           value: "0.15"
         - name: BATCH_SIZE
           value: "1"
+        - name: SEED
+          value: "42"
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:
@@ -33,6 +35,10 @@ spec:
         env:
         - name: OPERATION_MODE
           value: "logs"
+        - name: AUTO_SELECTION
+          value: "False"
+        - name: LOGS_TO_SEND
+          value: "inf"
         imagePullPolicy: Always
         name: logging-agent
         volumeMounts:

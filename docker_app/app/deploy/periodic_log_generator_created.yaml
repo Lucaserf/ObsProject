@@ -7,19 +7,21 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 2
+  parallelism: 5
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1707238053.5927112'
+          value: '1707832927.3972626'
         - name: WAIT_TIME
-          value: '120'
+          value: '150'
         - name: GEN_PERIOD
-          value: '0.15'
+          value: 0.1,0.1
         - name: BATCH_SIZE
           value: '1'
+        - name: SEED
+          value: '42'
         image: lucaserf/obs:sim_log
         imagePullPolicy: Always
         name: sim-gen
@@ -31,6 +33,10 @@ spec:
       - env:
         - name: OPERATION_MODE
           value: logs
+        - name: AUTO_SELECTION
+          value: 'False'
+        - name: LOGS_TO_SEND
+          value: '5000'
         image: lucaserf/logging_agent:cloudevents
         imagePullPolicy: Always
         name: logging-agent

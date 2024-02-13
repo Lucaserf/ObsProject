@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: push_server
+  name: push-server
+spec:
+  backoffLimit: 0
+  completions: 100
+  parallelism: 1
+  template:
+    spec:
+      nodeName: nodeserf1
+      containers:
+      - image: lucaserf/push:latest
+        imagePullPolicy: Always
+        name: push-data
+        env:
+        - name: DIMENSION_PACK
+          value: "10e5"
+        - name: PERIOD
+          value: "800e-3"
+      restartPolicy: Never
+

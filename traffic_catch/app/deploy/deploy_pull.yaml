@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: pull_server
+  name: pull-server
+spec:
+  backoffLimit: 0
+  completions: 100
+  parallelism: 1
+  template:
+    spec:
+      nodeName: nodeserf2
+      containers:
+      - image: lucaserf/pull:latest
+        imagePullPolicy: Always
+        name: pull-data
+        volumeMounts:
+        - mountPath: /var/data/pv/
+          name: data
+      restartPolicy: Never
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: traffic-data-pvc

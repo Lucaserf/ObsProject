@@ -10,6 +10,7 @@ import zmq
 import time
 import msgpack
 import pickle
+import numpy as np
 
 root = "/"
 log_folder = "/var/log/"
@@ -25,6 +26,12 @@ socket = context.socket(zmq.PUSH)
 socket.connect("tcp://reader-service.default:3000")
 
 operation_mode = os.environ["OPERATION_MODE"]
+auto_selection = os.environ["AUTO_SELECTION"]
+
+op_dict = {"logs": 0, "vectorized_logs": 1, "anomaly": 2}
+op_dict_inverse = {0: "logs", 1: "vectorized_logs", 2: "anomaly"}
+
+op = op_dict[operation_mode]
 
 
 
@@ -65,7 +72,11 @@ vocab_size = 5000
 max_len=85 # mean length + std length
 latent_dim=max_len//2
 threshold = 530
-number_logs_to_send = 1000
+number_logs_to_send = os.environ["LOGS_TO_SEND"]
+if number_logs_to_send == "inf":
+    number_logs_to_send = np.inf
+else:
+    number_logs_to_send = int(number_logs_to_send)
 
 with open("./app/logs_tokenizer/vocab_bgl.pkl","rb") as f:
     vocab = pickle.load(f)
@@ -81,7 +92,8 @@ metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vecto
 
 time_last_send = time.time()
 
-while True:  #i< number_logs_to_send:
+changed = True
+while i < number_logs_to_send:
     
     data = os.listdir(log_folder)
     #filtering
@@ -89,8 +101,25 @@ while True:  #i< number_logs_to_send:
     data = [x for x in data if "BGL" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
+    if auto_selection == "True" and changed:
+        if len(data) > 1:
+            op -= 1
+            changed = False
+        elif len(data) < 1 and (time.time()-time_last_send)*1000 > 20: #if we wait more than 20 ms we can do more calculations
+            op += 1
+            changed = False
+        else:
+            pass
+        if op < 0:
+            op = 0
+        if op > 2:
+            op = 2
+            
+
     #log rotation and aggregation
     if len(data)>= 1:
+        changed = True
+            
         i += 1
         d = data[0]
         
@@ -106,15 +135,15 @@ while True:  #i< number_logs_to_send:
 
         log_catch_time = time.time()
 
-        if operation_mode == "logs":
+        if op == 0:
             output = new_logs
 
-        elif operation_mode == "vectorized_logs":
+        elif op == 1:
             output = tokenizer.tokenizer(new_logs).numpy()
             output = [lv.tolist() for lv in output]
 
-        elif operation_mode == "anomaly":  
-            vectorized_logs = tokenizer.tokenizer(new_logs)
+        elif op == 2:  
+            vectorized_logs = tokenizer.vectorization(new_logs)
             loss = model.vae.get_loss(vectorized_logs)
             anomaly = []
             for l in loss:
@@ -129,7 +158,9 @@ while True:  #i< number_logs_to_send:
 
         after_preprocess_time = time.time()
 
-        compress_and_send(output,operation_mode,i,log_creation_time,log_catch_time,after_preprocess_time)
+        compress_and_send(output,op_dict_inverse[op],i,log_creation_time,log_catch_time,after_preprocess_time)
+
+        time_last_send = time.time()
 
         #training step
         # metrics["mean_padding"].append(tf.reduce_mean(tf.reduce_sum(tf.cast(vectorized_logs==0,tf.int32),axis=-1)).numpy())

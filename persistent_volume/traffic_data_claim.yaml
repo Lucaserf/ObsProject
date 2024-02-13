@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traffic-data-pvc
+spec:
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: traffic-data-pv

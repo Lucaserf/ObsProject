@@ -20,7 +20,7 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy.yaml","r") as f:
 dep_service = dep_read_doc[1]
 dep_read = dep_read_doc[0]
 #parameters for server
-dep_read["spec"]["replicas"] = 1
+dep_read["spec"]["replicas"] = 5
 
 dep_read_doc = dep_service,dep_read
 
@@ -31,14 +31,18 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml","w"
 
 
 #parameters job for logs generation
-dep_gen["spec"]["parallelism"] = 2
+dep_gen["spec"]["parallelism"] = 5
 #container 0 is the generator
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
-dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = str(120) #wait time 120, for sincronization and also waits the logging-agent to be ready
-dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = str(0.15) #period 0.2
-dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = str(1) #batch
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = "150" #wait time 150, for sincronization and also waits the logging-agent to be ready
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = "0.1,0.1" #period 0.2
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = "1" #batch
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][4]["value"] = "42" #seed
+
 #container 1 is the agent logger
 dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "logs" #operation mode (logs, vectorized_logs, anomaly)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][1]["value"] = "False" #auto selection (True, False)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][2]["value"] = "5000" #how many logs to send (int, inf)
 
 
 
@@ -51,6 +55,8 @@ subprocess.run(["kubectl","apply","-f","./docker_agent_reader/app/deploy/logs_re
 
 time.sleep(100) # 100 wait for the queue to be empty
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
+
+#launch dummy band occupation for testing limits
 
 subprocess.run(["kubectl","apply","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 
