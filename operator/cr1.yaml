@@ -1,10 +1,10 @@
 apiVersion: kopf.dev/v1
 kind: KopfExample
 metadata:
-  name: kopf-example-1
+  name: kopf-example-2
   labels:
     somelabel: somevalue
   annotations:
     someannotation: somevalue
 spec:
-  name: kopf-example-1
+  name: kopf-example-2

@@ -58,46 +58,125 @@
 import kopf
 import pykube
 import yaml
+import time
 
-
-@kopf.on.create('kopfexamples')
-def create_fn(spec, **kwargs):
-
-    # Render the pod yaml with some spec fields used in the template.
-    doc = yaml.safe_load(f"""
-        apiVersion: v1
-        kind: Pod
-        spec:
-          containers:
-          - name: the-only-one
-            image: busybox
-            command: ["sh", "-x", "-c"]
-            args:
-            - |
-              echo "FIELD=$FIELD"
-              sleep {spec.get('duration', 0)}
-            env:
-            - name: FIELD
-              value: {spec.get('field', 'default-value')}
-    """)
-
-    # Make it our child: assign the namespace, name, labels, owner references, etc.
-    kopf.adopt(doc)
-
-    # Actually create an object by requesting the Kubernetes API.
-    api = pykube.HTTPClient(pykube.KubeConfig.from_env())
-    pod = pykube.Pod(api, doc)
-    pod.create()
-    api.session.close()
-
-    # Update the parent's status.
-    return {'children': [pod.metadata['uid']]}
+max_memory = 64
+max_cpu = 250
 
 @kopf.on.create('kopfexamples')
-def print_fn(spec, **kwargs):
-    print(f"Object is created with spec: {spec!r}")
+def create_fn(spec,**kwargs):
+  api = pykube.HTTPClient(pykube.KubeConfig.from_env())
 
-@kopf.timer('kopfexamples', interval=5, initial_delay=5)
-def timer_fn(**kwargs):
-    print("Timer is fired.")
-    return {'message': 'Hello from the timer!'}
+  pods = pykube.Pod.objects(api).filter(namespace="default", selector={'child': 'kopfexample'})
+  state = len(pods.response['items'])
+
+
+  if state < 1:
+      text_to_print = "I am the only one"
+      memory = max_memory
+      cpu = max_cpu
+  else:
+      text_to_print = "I am not alone"
+      memory = max_memory//(state+1)
+      cpu = max_cpu//(state+1)
+
+  # Render the pod yaml with some spec fields used in the template.
+  doc = yaml.safe_load(f"""
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: {spec.get('name', 'default-name')}
+        labels: 
+          child: 'kopfexample'
+      spec:
+        containers:
+        - name: the-only-one
+          image: busybox
+          command: ["sh", "-x", "-c"]
+          args:
+          - |
+            while true
+            do
+            echo "{text_to_print}, memory: {memory}Mi, cpu: {cpu}m"
+            sleep 10
+            done
+          resources:
+            limits:
+              memory: "{memory}Mi"
+              cpu: "{cpu}m"
+  """)
+
+  # Make it our child: assign the namespace, name, labels, owner references, etc.
+  kopf.adopt(doc)
+
+  # Actually create an object by requesting the Kubernetes API.
+  pod = pykube.Pod(api, doc)
+  pod.create()
+  api.session.close()
+
+  # Update the parent's status.
+  return {"message": f"I am pod number {state}"}
+
+@kopf.timer('kopfexamples', interval=10, initial_delay=10)
+def timer_fn(spec,**kwargs):
+  print(spec)
+  api = pykube.HTTPClient(pykube.KubeConfig.from_env())
+  state = 0
+  
+  pods = pykube.Pod.objects(api).filter(namespace="default", selector={'child': 'kopfexample'})
+  state = len(pods.response['items'])
+
+  if state <= 1:
+      text_to_print = "I am the only one"
+      memory = max_memory
+      cpu = max_cpu
+  else:
+      text_to_print = "I am not alone"
+      memory = max_memory//(state)
+      cpu = max_cpu//(state)
+
+  for pod in pods:
+    name = pod.obj['metadata']['name']
+    memory_assigned = pod.obj['spec']['containers'][0]['resources']['limits']['memory']
+    print(name)
+    if name == spec.get('name', 'default-name') and memory_assigned != f"{memory}Mi":
+      pod.delete()
+      #Update the pod memory and cpu
+      doc = yaml.safe_load(f"""
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: {spec.get('name', 'default-name')}
+        labels: 
+          child: 'kopfexample'
+      spec:
+        containers:
+        - name: the-only-one
+          image: busybox
+          command: ["sh", "-x", "-c"]
+          args:
+          - |
+            while true
+            do
+            echo "{text_to_print}, memory: {memory}Mi, cpu: {cpu}m"
+            sleep 10
+            done
+          resources:
+            limits:
+              memory: "{memory}Mi"
+              cpu: "{cpu}m"
+      """)
+
+      print(f"updating {name}, {memory}Mi, {cpu}m")
+      kopf.adopt(doc)
+      pods_names = [p['metadata']['name'] for p in pods.response['items']]
+      while name in pods_names:
+        time.sleep(1)
+        pods = pykube.Pod.objects(api).filter(namespace="default", selector={'child': 'kopfexample'})
+        pods_names = [p['metadata']['name'] for p in pods.response['items']]
+      pod = pykube.Pod(api, doc)
+      pod.create()
+
+
+  api.session.close()
+  return {'message': f'there are {state} custom pods running'}
