@@ -13,9 +13,9 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1708713995.5395167'
+          value: '1708955845.3526564'
         - name: WAIT_TIME
-          value: '0'
+          value: '200'
         - name: GEN_PERIOD
           value: 0.01,0.01
         - name: BATCH_SIZE
