@@ -3,17 +3,17 @@ kind: Deployment
 metadata:
   name: dataread-deployment
   labels:
-    app: data-generation-example
+    app: data-reading
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: data-reading-example
+      app: data-reading
   template:
     metadata:
       name: dataread   
       labels:   
-        app: data-reading-example   
+        app: data-reading  
     spec:
       nodeName: nodeserf2
       containers:   
@@ -37,9 +37,11 @@ metadata:
   name: reader-service
 spec:
   selector:
-    app: data-reading-example
+    app: data-reading
   ports:
     - protocol: "TCP"
       port: 3000
       targetPort: 3000
   type: ClusterIP
+
+  

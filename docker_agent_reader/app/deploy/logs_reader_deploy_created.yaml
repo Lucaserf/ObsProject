@@ -8,24 +8,24 @@ spec:
     protocol: TCP
     targetPort: 3000
   selector:
-    app: data-reading-example
+    app: data-reading
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: data-generation-example
+    app: data-reading
   name: dataread-deployment
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
-      app: data-reading-example
+      app: data-reading
   template:
     metadata:
       labels:
-        app: data-reading-example
+        app: data-reading
       name: dataread
     spec:
       containers:

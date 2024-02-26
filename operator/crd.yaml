@@ -1,17 +1,17 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: ephemeralvolumeclaims.kopf.dev
+  name: kopfexamples.kopf.dev
 spec:
   scope: Namespaced
   group: kopf.dev
   names:
-    kind: EphemeralVolumeClaim
-    plural: ephemeralvolumeclaims
-    singular: ephemeralvolumeclaim
+    kind: KopfExample
+    plural: kopfexamples
+    singular: kopfexample
     shortNames:
-      - evcs
-      - evc
+      - kex
+      - kexes
   versions:
     - name: v1
       served: true
@@ -26,3 +26,19 @@ spec:
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Duration
+          type: string
+          priority: 0
+          jsonPath: .spec.duration
+          description: For how long the pod should sleep.
+        - name: Children
+          type: string
+          priority: 0
+          jsonPath: .status.create_fn.children
+          description: The children pods created.
+        - name: Message
+          type: string
+          priority: 0
+          jsonPath: .status.create_fn.message
+          description: As returned from the handler (sometimes).

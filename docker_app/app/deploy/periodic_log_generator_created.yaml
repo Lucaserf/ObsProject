@@ -7,17 +7,17 @@ metadata:
 spec:
   backoffLimit: 0
   completions: 100
-  parallelism: 5
+  parallelism: 1
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1707832927.3972626'
+          value: '1708713995.5395167'
         - name: WAIT_TIME
-          value: '150'
+          value: '0'
         - name: GEN_PERIOD
-          value: 0.1,0.1
+          value: 0.01,0.01
         - name: BATCH_SIZE
           value: '1'
         - name: SEED

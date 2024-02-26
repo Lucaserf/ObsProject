@@ -90,7 +90,3 @@ while True:
 
     with open(permanent_folder+"time.txt","a") as f:
         f.write("{},{},{},{},{},{},{},{},{},{}\n".format(id_node,id,type_log,log_creation_time,catch_time,time_after_preprocess,server_catch_time,time.time(),data_size,id_server))
-
-
-
-
