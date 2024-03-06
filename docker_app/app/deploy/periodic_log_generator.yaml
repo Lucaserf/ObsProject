@@ -10,7 +10,7 @@ spec:
   parallelism: 1
   template:
     spec:
-      nodeName: nodeserf1
+      nodeName: nodeserf3
       containers:
       - image: lucaserf/obs:sim_log
         env:
@@ -31,7 +31,7 @@ spec:
           name: varlog
         - mountPath: /var/data/
           name: data
-      - image: lucaserf/logging_agent:cloudevents
+      - image: lucaserf/logging_agent:latest
         env:
         - name: OPERATION_MODE
           value: "logs"

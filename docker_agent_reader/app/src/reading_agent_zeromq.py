@@ -1,5 +1,4 @@
 
-import bz2
 import pickle
 import sys
 import os
@@ -9,6 +8,7 @@ import zmq
 import time
 import msgpack
 
+print("starting")
 permanent_folder = "var/log/pv/logging_data/"
 
 id_server = os.environ["HOSTNAME"].split("-")[-1]

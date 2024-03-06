@@ -3,8 +3,8 @@
 cd ~/ObsProject/
 
 # docker build --no-cache -t lucaserf/logging_agent:latest ./docker_agent_logger/
-docker build -t lucaserf/logging_agent:cloudevents ./docker_agent_logger/
-docker push lucaserf/logging_agent:cloudevents
+docker build -t lucaserf/logging_agent:latest ./docker_agent_logger/
+docker push lucaserf/logging_agent:latest
 
 
 # docker build --no-cache -t lucaserf/obs:sim_log ./docker_app/

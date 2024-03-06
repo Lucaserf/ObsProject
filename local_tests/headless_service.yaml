@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Name of the headless service
+  name: my-headless-service
+spec:
+  # Indicates a headless service
+  clusterIP: None
+  selector:
+    # The pod or deployment to route traffic to
+    app: nginx-web-server
+  ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reader-service
+spec: 
+  clusterIP: None
+  selector:
+    app: data-reading
+  ports:
+    - protocol: "TCP"
+      port: 3000
+      targetPort: 3000

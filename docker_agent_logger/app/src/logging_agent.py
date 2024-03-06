@@ -11,6 +11,10 @@ import time
 import msgpack
 import pickle
 import numpy as np
+# import kubernetes as k8s
+import socket
+
+print("starting")
 
 root = "/"
 log_folder = "/var/log/"
@@ -22,8 +26,36 @@ except:
     pass
 
 context = zmq.Context()
-socket = context.socket(zmq.PUSH)
-socket.connect("tcp://reader-service.default:3000")
+socket_zmq = context.socket(zmq.PUSH)
+# print("configuring k8s")
+# k8s.config.load_incluster_config()
+# print("getting endpoints")
+# #get endpoints
+# api = k8s.client.CoreV1Api()
+# endpoints = api.list_namespaced_endpoints("default").items
+# #filter reader-service endpoint
+# print("filtering")
+# endpoints = [e for e in endpoints if e.metadata.name == "reader-service"]
+# #get ip and port
+# print("getting ip and port")
+# ips = [s.ip for s in endpoints[0].subsets[0].addresses]
+# print(f"{ips}")
+# port = endpoints[0].subsets[0].ports[0].port
+# ips_port = [f"{ip}:{port}" for ip in ips]
+# print(f"{ips_port}")
+
+# for ip in ips_port:
+endpoints = socket.gethostbyname_ex("reader-service.default.svc.cluster.local")[2]
+print(endpoints)
+print(len(endpoints))
+for ip in endpoints:
+    try:
+        socket_zmq.connect(f"tcp://{ip}:3000")
+        print(f"connected to {ip}")
+    except:
+        print(f"connection to {ip} failed")
+
+print("connected to all")
 
 operation_mode = os.environ["OPERATION_MODE"]
 auto_selection = os.environ["AUTO_SELECTION"]
@@ -63,8 +95,7 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
             compressed_event = msgpack.packb(event)
             
 
-            socket.send(compressed_event)
-            # r = requests.post("http://reader-service.default:3000",data=compressed_data,headers=headers)
+            socket_zmq.send(compressed_event)
 
 
 #we give the dataset as a given to train the tokenizer, for a real application we would have a fase of training and then inference

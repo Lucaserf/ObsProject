@@ -20,7 +20,7 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy.yaml","r") as f:
 dep_service = dep_read_doc[1]
 dep_read = dep_read_doc[0]
 #parameters for server
-dep_read["spec"]["replicas"] = 1
+dep_read["spec"]["replicas"] = 8
 
 dep_read_doc = dep_service,dep_read
 
@@ -53,7 +53,7 @@ with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as 
 subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 subprocess.run(["kubectl","apply","-f","./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml"])
 
-time.sleep(100) # 100 wait for the queue to be empty
+time.sleep(0) # 100 wait for the queue to be empty
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 
 #launch dummy band occupation for testing limits

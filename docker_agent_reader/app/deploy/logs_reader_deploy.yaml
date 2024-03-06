@@ -17,7 +17,7 @@ spec:
     spec:
       nodeName: nodeserf2
       containers:   
-      - image: lucaserf/reading_agent:cloudevents
+      - image: lucaserf/reading_agent:latest
         imagePullPolicy: Always
         name: dataread
         ports:   
@@ -35,13 +35,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: reader-service
-spec:
+spec: 
+  clusterIP: None
   selector:
     app: data-reading
   ports:
     - protocol: "TCP"
       port: 3000
       targetPort: 3000
-  type: ClusterIP
-
-  
+---

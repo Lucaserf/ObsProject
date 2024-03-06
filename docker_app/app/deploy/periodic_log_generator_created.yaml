@@ -13,7 +13,7 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1708955845.3526564'
+          value: '1709744322.7784505'
         - name: WAIT_TIME
           value: '200'
         - name: GEN_PERIOD
@@ -37,7 +37,7 @@ spec:
           value: 'False'
         - name: LOGS_TO_SEND
           value: '5000'
-        image: lucaserf/logging_agent:cloudevents
+        image: lucaserf/logging_agent:latest
         imagePullPolicy: Always
         name: logging-agent
         volumeMounts:
@@ -45,7 +45,7 @@ spec:
           name: pvlog
         - mountPath: /var/log/
           name: varlog
-      nodeName: nodeserf1
+      nodeName: nodeserf3
       restartPolicy: Never
       volumes:
       - emptyDir: {}

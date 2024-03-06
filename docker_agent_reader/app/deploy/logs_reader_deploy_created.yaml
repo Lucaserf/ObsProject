@@ -3,13 +3,13 @@ kind: Service
 metadata:
   name: reader-service
 spec:
+  clusterIP: None
   ports:
   - port: 3000
     protocol: TCP
     targetPort: 3000
   selector:
     app: data-reading
-  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -18,7 +18,7 @@ metadata:
     app: data-reading
   name: dataread-deployment
 spec:
-  replicas: 1
+  replicas: 8
   selector:
     matchLabels:
       app: data-reading
@@ -29,7 +29,7 @@ spec:
       name: dataread
     spec:
       containers:
-      - image: lucaserf/reading_agent:cloudevents
+      - image: lucaserf/reading_agent:latest
         imagePullPolicy: Always
         name: dataread
         ports:
