@@ -243,13 +243,16 @@ class VAE(tf.keras.Model):
         return reconstruction
 
     def save_model(self, chkpt):
+        # self.encoder.save(chkpt + "encoder", save_format="tf")
+        # self.decoder.save(chkpt + "decoder", save_format="tf")
         self.encoder.save_weights(chkpt + "encoder")
         self.decoder.save_weights(chkpt + "decoder")
 
     def load_model(self, chkpt):
+        # self.encoder = tf.keras.models.load_model(chkpt + "encoder")
+        # self.decoder = tf.keras.models.load_model(chkpt + "decoder")
         self.encoder.load_weights(chkpt + "encoder")
         self.decoder.load_weights(chkpt + "decoder")
-
     def encode(self, data):
         z_mean, z_log_var, z = self.encoder(data)
         return z 

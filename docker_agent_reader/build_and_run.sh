@@ -2,8 +2,8 @@
 
 cd ~/ObsProject/
 
-docker build -t lucaserf/reading_agent:cloudevents docker_agent_reader/
-docker push lucaserf/reading_agent:cloudevents
+docker build -t lucaserf/reading_agent:latest docker_agent_reader/
+docker push lucaserf/reading_agent:latest
 
 kubectl rollout restart deployment/dataread-deployment
 

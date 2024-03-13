@@ -6,11 +6,18 @@ metadata:
   name: periodic-log-generator-job
 spec:
   backoffLimit: 0
-  completions: 100
+  completions: 1
   parallelism: 1
   template:
     spec:
       nodeName: nodeserf3
+      # topologySpreadConstraints:
+      # - maxSkew: 1 
+      #   topologyKey: node-role.kubernetes.io/worker
+      #   whenUnsatisfiable: DoNotSchedule
+      #   labelSelector: 
+      #     matchLabels:
+      #       app: periodic-log-generator
       containers:
       - image: lucaserf/obs:sim_log
         env:

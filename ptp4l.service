@@ -1,0 +1,11 @@
+[Unit]
+Description = Precision Time Protocol (PTP) Service
+After = network-online.target
+Wants = network-online.target
+
+[Service]
+Type = simple
+ExecStart = /usr/sbin/ptp4l -i eth0 -ASl 1 -m #-s #client
+
+[Install]
+WantedBy = multi-user.target

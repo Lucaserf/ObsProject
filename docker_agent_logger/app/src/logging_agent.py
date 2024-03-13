@@ -27,35 +27,6 @@ except:
 
 context = zmq.Context()
 socket_zmq = context.socket(zmq.PUSH)
-# print("configuring k8s")
-# k8s.config.load_incluster_config()
-# print("getting endpoints")
-# #get endpoints
-# api = k8s.client.CoreV1Api()
-# endpoints = api.list_namespaced_endpoints("default").items
-# #filter reader-service endpoint
-# print("filtering")
-# endpoints = [e for e in endpoints if e.metadata.name == "reader-service"]
-# #get ip and port
-# print("getting ip and port")
-# ips = [s.ip for s in endpoints[0].subsets[0].addresses]
-# print(f"{ips}")
-# port = endpoints[0].subsets[0].ports[0].port
-# ips_port = [f"{ip}:{port}" for ip in ips]
-# print(f"{ips_port}")
-
-# for ip in ips_port:
-endpoints = socket.gethostbyname_ex("reader-service.default.svc.cluster.local")[2]
-print(endpoints)
-print(len(endpoints))
-for ip in endpoints:
-    try:
-        socket_zmq.connect(f"tcp://{ip}:3000")
-        print(f"connected to {ip}")
-    except:
-        print(f"connection to {ip} failed")
-
-print("connected to all")
 
 operation_mode = os.environ["OPERATION_MODE"]
 auto_selection = os.environ["AUTO_SELECTION"]
@@ -67,7 +38,7 @@ op = op_dict[operation_mode]
 
 
 
-def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_preprocess_time):
+def compress_and_send(data,type_log,i,log_creation_time,catching_time):
             
             # compressed_data = bz2.compress(pickle.dumps(data))
             # print(f"lenght of {type_log}: ", sys.getsizeof(compressed_data))
@@ -81,19 +52,20 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time,after_prep
             #     "time": str(catching_time),
             # }, {"data": []}))
 
+            data = pickle.dumps(data)
+
             event = {
                 "id_node": os.environ["HOSTNAME"].split("-")[-1],
                 "id": i,
                 "type": type_log,
                 "source": "simulation",
                 "catch_time": catching_time,
-                "after_preprocess_time": after_preprocess_time,
+                "after_preprocess_time": time.time(),
                 "log_creation_time": log_creation_time,
                 "data": data,
             }
-
-            compressed_event = msgpack.packb(event)
             
+            compressed_event = pickle.dumps(event)  
 
             socket_zmq.send(compressed_event)
 
@@ -122,6 +94,18 @@ save_iterations = 20
 metrics ={"total_loss":[],"reconstruction_loss":[],"kl_loss":[],"logs":[],"vectorized_logs":[],"encoded_logs":[],"mean_padding":[],"anomaly":[]}
 
 time_last_send = time.time()
+
+endpoints = socket.gethostbyname_ex("reader-service.default.svc.cluster.local")[2]
+print(endpoints)
+print(len(endpoints))
+for ip in endpoints:
+    try:
+        socket_zmq.connect(f"tcp://{ip}:3000")
+        print(f"connected to {ip}")
+    except:
+        print(f"connection to {ip} failed")
+
+print("connected to all")
 
 changed = True
 while i < number_logs_to_send:
@@ -187,9 +171,7 @@ while i < number_logs_to_send:
         else:
             raise ValueError("operation mode not recognized")
 
-        after_preprocess_time = time.time()
-
-        compress_and_send(output,op_dict_inverse[op],i,log_creation_time,log_catch_time,after_preprocess_time)
+        compress_and_send(output,op_dict_inverse[op],i,log_creation_time,log_catch_time)
 
         time_last_send = time.time()
 
