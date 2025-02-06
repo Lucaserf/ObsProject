@@ -145,6 +145,7 @@ while i < number_logs_to_send:
 
         if op == 0:
             output = new_logs
+            #filtro
 
         elif op == 1:
             output = tokenizer.tokenizer(new_logs).numpy()
