@@ -1,6 +1,7 @@
 flask
 pandas
-tensorflow==2.14.0
+# tensorflow==2.14.0
+tensorflow
 msgpack
 numpy
 kubernetes

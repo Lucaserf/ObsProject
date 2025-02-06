@@ -31,6 +31,8 @@ spec:
           value: "1"
         - name: SEED
           value: "42"
+        - name: DATANAME
+          value: "BGL.log"
         imagePullPolicy: Always
         name: sim-gen
         volumeMounts:

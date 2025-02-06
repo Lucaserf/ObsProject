@@ -14,7 +14,7 @@ except:
     pass
 
 raw_ds = (
-    tf.data.TextLineDataset(data_folder+"BGL.log")
+    tf.data.TextLineDataset(data_folder+os.environ["DATANAME"])
     # .filter(lambda x: tf.strings.length(x) < MAN_TRAINING_SEQ_LEN)
     # .batch(128)
     # .shuffle(buffer_size=256)
@@ -56,16 +56,25 @@ gen_period = gen_period_max
 
 batch = int(os.environ["BATCH_SIZE"])
 
-period_change = 1 #seconds
+period_change = 5 #seconds
+period_max = 60 #seconds
+delta = (gen_period_max-gen_period_min)/period_max
+
 t_change = time.time()+period_change+1
 t = time.time()
 
 for i,log in enumerate(ds.batch(batch)):
     if period_change-(time.time()-t_change) < 0:
-        new_speed = np.random.normal(0.5,0.2)
-        while new_speed < 0 or new_speed > 1:
-            new_speed = np.random.normal(0.5,0.2)
-        gen_period = (gen_period_max-gen_period_min)*new_speed+gen_period_min
+        # new_speed = np.random.normal(0.5,0.2)
+        # while new_speed < 0 or new_speed > 1:
+        #     new_speed = np.random.normal(0.5,0.2)
+        # gen_period = (gen_period_max-gen_period_min)*new_speed+gen_period_min
+        # t_change = time.time()
+
+        #linear change
+        gen_period = gen_period-delta
+        if gen_period < gen_period_min:
+            gen_period = gen_period_min
         t_change = time.time()
     time_to_wait = gen_period-(time.time()-t)
     if time_to_wait > 0:

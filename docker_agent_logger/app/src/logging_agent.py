@@ -45,13 +45,6 @@ def compress_and_send(data,type_log,i,log_creation_time,catching_time):
             
             # metrics[type_log].append(sys.getsizeof(compressed_data))
 
-            # headers, _ = to_binary(CloudEvent({
-            #     "id": str(i),
-            #     "type": type_log,
-            #     "source": "simulation",
-            #     "time": str(catching_time),
-            # }, {"data": []}))
-
             data = pickle.dumps(data)
 
             event = {
@@ -168,6 +161,11 @@ while i < number_logs_to_send:
                     anomaly.append(False)
 
             output = anomaly
+            # number_logs = len(new_logs)
+            # anomaly_rate = random.random()*0.05
+            # anomaly_index_selection = [random.randint(0,number_logs-1) for _ in range(int(number_logs*anomaly_rate))]
+            # output = [new_logs[i] for i in anomaly_index_selection]
+            # output = [log for log in new_logs if random.random() < 0.01]
         else:
             raise ValueError("operation mode not recognized")
 

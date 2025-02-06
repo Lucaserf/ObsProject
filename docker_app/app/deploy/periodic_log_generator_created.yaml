@@ -6,22 +6,24 @@ metadata:
   name: periodic-log-generator-job
 spec:
   backoffLimit: 0
-  completions: 10
-  parallelism: 10
+  completions: 1
+  parallelism: 1
   template:
     spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1710352301.2936661'
+          value: '1738856921.9267728'
         - name: WAIT_TIME
           value: '100'
         - name: GEN_PERIOD
-          value: 0.05,0.05
+          value: 0.05,0.5
         - name: BATCH_SIZE
-          value: '256'
+          value: '16'
         - name: SEED
           value: '42'
+        - name: DATANAME
+          value: BGL_created.log
         image: lucaserf/obs:sim_log
         imagePullPolicy: Always
         name: sim-gen
@@ -32,11 +34,11 @@ spec:
           name: data
       - env:
         - name: OPERATION_MODE
-          value: logs
+          value: anomaly
         - name: AUTO_SELECTION
           value: 'False'
         - name: LOGS_TO_SEND
-          value: '3000'
+          value: '2000'
         image: lucaserf/logging_agent:latest
         imagePullPolicy: Always
         name: logging-agent
