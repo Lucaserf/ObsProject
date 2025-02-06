@@ -56,9 +56,13 @@ gen_period = gen_period_max
 
 batch = int(os.environ["BATCH_SIZE"])
 
-period_change = 5 #seconds
-period_max = 60 #seconds
-delta = (gen_period_max-gen_period_min)/period_max
+fmax = 1/gen_period_min
+fmin = 1/gen_period_max
+
+#linear frequency change every 10 seconds
+period_change = 10
+
+deltaf = (fmax-fmin)/12
 
 t_change = time.time()+period_change+1
 t = time.time()
@@ -72,7 +76,7 @@ for i,log in enumerate(ds.batch(batch)):
         # t_change = time.time()
 
         #linear change
-        gen_period = gen_period-delta
+        gen_period = 1/((1/gen_period)+deltaf)
         if gen_period < gen_period_min:
             gen_period = gen_period_min
         t_change = time.time()
