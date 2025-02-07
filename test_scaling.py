@@ -20,7 +20,7 @@ with open("./docker_agent_reader/app/deploy/logs_reader_deploy.yaml","r") as f:
 dep_service = dep_read_doc[1]
 dep_read = dep_read_doc[0]
 #parameters for server
-dep_read["spec"]["replicas"] = 1
+dep_read["spec"]["replicas"] = 6
 
 dep_read_doc = dep_service,dep_read
 
@@ -35,7 +35,7 @@ dep_gen["spec"]["parallelism"] = parralel_jobs
 #container 0 is the generator
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][0]["value"] = str(time.time()) #start time
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][1]["value"] = "100" #wait time 150, for sincronization and also waits the logging-agent to be ready
-dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = "0.01,0.2" #period 0.2
+dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][2]["value"] = "0.05,0.6" #period 0.2
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][3]["value"] = "16" #batch
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][4]["value"] = "42" #seed
 dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][5]["value"] = "BGL_created.log" #log file name (BGL_created.log,BGL.log)
@@ -43,7 +43,7 @@ dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][5]["value"] = "BGL_c
 #container 1 is the agent logger
 dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "anomaly" #operation mode (logs, vectorized_logs, anomaly)
 dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][1]["value"] = "True" #auto selection (True, False)
-dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][2]["value"] = "20000" #how many logs to send (int, inf)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][2]["value"] = "2000" #how many logs to send (int, inf)
 
 
 
@@ -54,7 +54,7 @@ with open("./docker_app/app/deploy/periodic_log_generator_created.yaml","w") as 
 subprocess.run(["kubectl","delete","-f","./docker_app/app/deploy/periodic_log_generator_created.yaml"])
 subprocess.run(["kubectl","apply","-f","./docker_agent_reader/app/deploy/logs_reader_deploy_created.yaml"])
 
-time.sleep(50) # 50 wait for the queue to be empty
+time.sleep(0) # 50 wait for the queue to be empty
 subprocess.run(["kubectl","rollout","restart","deployment/dataread-deployment"])
 time.sleep(20) # 20 wait for server to start before connecting the generator
 

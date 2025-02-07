@@ -60,9 +60,9 @@ fmax = 1/gen_period_min
 fmin = 1/gen_period_max
 
 #linear frequency change every 10 seconds
-period_change = 10
+period_change = 20
 
-deltaf = (fmax-fmin)/12
+deltaf = (fmax-fmin)/6
 
 t_change = time.time()+period_change+1
 t = time.time()

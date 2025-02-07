@@ -13,11 +13,11 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1738863561.073502'
+          value: '1738946732.0356321'
         - name: WAIT_TIME
           value: '100'
         - name: GEN_PERIOD
-          value: 0.01,0.2
+          value: 0.05,0.6
         - name: BATCH_SIZE
           value: '16'
         - name: SEED
@@ -38,7 +38,7 @@ spec:
         - name: AUTO_SELECTION
           value: 'True'
         - name: LOGS_TO_SEND
-          value: '20000'
+          value: '2000'
         image: lucaserf/logging_agent:latest
         imagePullPolicy: Always
         name: logging-agent

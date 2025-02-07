@@ -100,6 +100,10 @@ for ip in endpoints:
 
 print("connected to all")
 
+delta_messages = int(number_logs_to_send/3.5)
+
+delta_messages2 = int(number_logs_to_send/4)
+
 changed = True
 while i < number_logs_to_send:
     
@@ -109,20 +113,30 @@ while i < number_logs_to_send:
     data = [x for x in data if "BGL" in x]
     data.sort(key=lambda x: os.path.getmtime(os.path.join(log_folder,x)))
 
-    if auto_selection == "True" and changed:
-        if len(data) > 1:
-            op -= 1
-            changed = False
-        elif len(data) < 1 and (time.time()-time_last_send)*1000 > 20: #if we wait more than 20 ms we can do more calculations
-            op += 1
-            changed = False
-        else:
-            pass
+    # if auto_selection == "True" and changed:
+    #     if len(data) > 1:
+    #         op -= 1
+    #         changed = False
+    #     elif len(data) < 1 and (time.time()-time_last_send)*1000 > 20: #if we wait more than 20 ms we can do more calculations
+    #         op += 1
+    #         changed = False
+    #     else:
+    #         pass
+    #     if op < 0:
+    #         op = 0
+    #     if op > 2:
+    #         op = 2
+
+    #set times for the selection of the logs 
+    if auto_selection == "True":
+        if (i+1)%delta_messages == 0 and op == 2:
+            op-=1
+        if (i+1)%delta_messages2 == 0 and op == 1:
+            op-=1
         if op < 0:
             op = 0
         if op > 2:
             op = 2
-            
 
     #log rotation and aggregation
     if len(data)>= 1:
@@ -148,8 +162,9 @@ while i < number_logs_to_send:
             #filtro
 
         elif op == 1:
-            output = tokenizer.tokenizer(new_logs).numpy()
-            output = [lv.tolist() for lv in output]
+            # output = tokenizer.tokenizer(new_logs).numpy()
+            # output = [lv.tolist() for lv in output]
+            output = tokenizer.tokenizer(new_logs)
 
         elif op == 2:  
             vectorized_logs = tokenizer.vectorization(new_logs)
