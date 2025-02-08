@@ -102,7 +102,7 @@ print("connected to all")
 
 delta_messages = int(number_logs_to_send/3.5)
 
-delta_messages2 = int(number_logs_to_send/4)
+delta_messages2 = delta_messages+ int(number_logs_to_send/2)
 
 changed = True
 while i < number_logs_to_send:

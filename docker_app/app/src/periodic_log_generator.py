@@ -60,21 +60,15 @@ fmax = 1/gen_period_min
 fmin = 1/gen_period_max
 
 #linear frequency change every 10 seconds
-period_change = 20
+period_change = 1
 
-deltaf = (fmax-fmin)/6
+deltaf = (fmax-fmin)/120
 
-t_change = time.time()+period_change+1
+t_change = time.time()+period_change
 t = time.time()
 
 for i,log in enumerate(ds.batch(batch)):
     if period_change-(time.time()-t_change) < 0:
-        # new_speed = np.random.normal(0.5,0.2)
-        # while new_speed < 0 or new_speed > 1:
-        #     new_speed = np.random.normal(0.5,0.2)
-        # gen_period = (gen_period_max-gen_period_min)*new_speed+gen_period_min
-        # t_change = time.time()
-
         #linear change
         gen_period = 1/((1/gen_period)+deltaf)
         if gen_period < gen_period_min:

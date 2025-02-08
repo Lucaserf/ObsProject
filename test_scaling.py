@@ -42,7 +42,7 @@ dep_gen["spec"]["template"]["spec"]["containers"][0]["env"][5]["value"] = "BGL_c
 
 #container 1 is the agent logger
 dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][0]["value"] = "anomaly" #operation mode (logs, vectorized_logs, anomaly)
-dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][1]["value"] = "True" #auto selection (True, False)
+dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][1]["value"] = "False" #auto selection (True, False)
 dep_gen["spec"]["template"]["spec"]["containers"][1]["env"][2]["value"] = "2000" #how many logs to send (int, inf)
 
 
