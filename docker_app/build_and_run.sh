@@ -11,7 +11,6 @@ docker push lucaserf/logging_agent:latest
 docker build -t lucaserf/obs:sim_log ./docker_app/
 docker push lucaserf/obs:sim_log
 
-
 # kubectl rollout restart deployment/cloudevents-gen-deployment
 
 # kubectl apply -f ./docker_app/app/deploy/cloudevents-deploy.yaml

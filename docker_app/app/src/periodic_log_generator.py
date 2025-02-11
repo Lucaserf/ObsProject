@@ -53,38 +53,56 @@ if  desync_time > 0:
 gen_period = os.environ["GEN_PERIOD"].split(",")
 gen_period_min, gen_period_max = float(gen_period[0]), float(gen_period[1])
 gen_period = gen_period_max
+starting_gen_period = gen_period
 
-batch = int(os.environ["BATCH_SIZE"])
+batch, change = os.environ["BATCH_SIZE"].split(",")
+batch = int(batch)
+
 
 fmax = 1/gen_period_min
 fmin = 1/gen_period_max
 
 #linear frequency change every 10 seconds
-period_change = 1
+period_change = 20
 
-deltaf = (fmax-fmin)/120
+deltaf = (fmax-fmin)/6
 
 t_change = time.time()+period_change
 t = time.time()
 
-for i,log in enumerate(ds.batch(batch)):
+batch_count = 0
+
+t_start = time.time()
+
+for i,log in enumerate(ds.batch(1)):
+
+    #change batch size at a specific frequency, check every 15 seconds, to scale with batch before the scaling changing pre-processing
+    if (time.time() - t_start) > 82 and batch != 16 and change=="True":
+        batch = 16
+        print("batch size changed to 32")
+
     if period_change-(time.time()-t_change) < 0:
         #linear change
         gen_period = 1/((1/gen_period)+deltaf)
         if gen_period < gen_period_min:
             gen_period = gen_period_min
         t_change = time.time()
+
     time_to_wait = gen_period-(time.time()-t)
     if time_to_wait > 0:
         time.sleep(time_to_wait)
-    
-    with open("/var/log/tmp.log","w") as f:
-            f.write("\n".join([x.decode("utf-8") for x in log[0].numpy()])+"\n")
 
-    os.rename("/var/log/tmp.log","/var/log/BGL{}.log".format(str(time.time())))
+    # with open("/var/log/tmp.log","a") as f:
+    #     f.write("\n".join([x.decode("utf-8") for x in log[0].numpy()])+"\n")
+    with open("/var/log/tmp.log","a") as f:
+        f.write(log[0].numpy()[0].decode("utf-8")+"\n")
+        
+    batch_count += 1
+    if batch_count == batch:
+        batch_count = 0
+        os.rename("/var/log/tmp.log","/var/log/BGL{}.log".format(str(time.time())))
     
-
-    print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
+    # print("generated log {}, after {} ms".format(i,(time.time()-t)*1000))
     
     t = time.time()
     
