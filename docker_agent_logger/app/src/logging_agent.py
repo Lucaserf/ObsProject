@@ -176,21 +176,21 @@ while i < number_logs_to_send:
             output = tokenizer.tokenizer(new_logs)
 
         elif op == 2:  
-            vectorized_logs = tokenizer.vectorization(new_logs)
-            loss = model.vae.get_loss(vectorized_logs)
-            anomaly = []
-            for l in loss:
-                if l > threshold:
-                    anomaly.append(True)
-                else:
-                    anomaly.append(False)
+            # vectorized_logs = tokenizer.vectorization(new_logs)
+            # loss = model.vae.get_loss(vectorized_logs)
+            # anomaly = []
+            # for l in loss:
+            #     if l > threshold:
+            #         anomaly.append(True)
+            #     else:
+            #         anomaly.append(False)
 
-            output = anomaly
+            # output = anomaly
             # number_logs = len(new_logs)
             # anomaly_rate = random.random()*0.05
             # anomaly_index_selection = [random.randint(0,number_logs-1) for _ in range(int(number_logs*anomaly_rate))]
             # output = [new_logs[i] for i in anomaly_index_selection]
-            # output = [log for log in new_logs if random.random() < 0.01]
+            output = [log for log in new_logs if random.random() < 0.01]
         else:
             raise ValueError("operation mode not recognized")
 

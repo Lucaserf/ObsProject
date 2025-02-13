@@ -13,13 +13,13 @@ spec:
       containers:
       - env:
         - name: START_TIME
-          value: '1739296497.8985977'
+          value: '1739359632.1690266'
         - name: WAIT_TIME
           value: '100'
         - name: GEN_PERIOD
-          value: 0.03,0.03
+          value: 0.001,0.001
         - name: BATCH_SIZE
-          value: 1,False
+          value: 30,False
         - name: SEED
           value: '42'
         - name: DATANAME
@@ -34,11 +34,11 @@ spec:
           name: data
       - env:
         - name: OPERATION_MODE
-          value: anomaly
+          value: vectorized_logs
         - name: AUTO_SELECTION
           value: 'False'
         - name: LOGS_TO_SEND
-          value: '8000'
+          value: '2500'
         image: lucaserf/logging_agent:latest
         imagePullPolicy: Always
         name: logging-agent
